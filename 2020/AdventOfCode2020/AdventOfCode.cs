@@ -149,49 +149,36 @@ namespace AdventOfCode2020
 
         public class Day4
         {
+            private readonly string[] ExpectedFields = { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
+
             [Test]
             public void Day4_Part1()
             {
-                var passports = new List<Dictionary<string, string>>();
-                var newPassport = new Dictionary<string, string>();
-                
-                foreach (var line in File.ReadAllLines("Day4.txt"))
-                {
-                    if (string.IsNullOrEmpty(line))
-                    {
-                        passports.Add(newPassport);
-                        newPassport = new Dictionary<string, string>();
-                        continue;
-                    }
+                var passports = GetPassports();
 
-                    foreach (var pair in line.Split(" "))
-                    {
-                        var keyValue = pair.Split(':');
-                        newPassport[keyValue[0]] = keyValue[1];
-                    }
-                }
+                var valid = passports.Count(passport => ExpectedFields.All(passport.ContainsKey));
 
-                var valids = 0;
-                
-                foreach (var passport in passports)
-                {
-                    if (passport.ContainsKey("byr") &&
-                        passport.ContainsKey("iyr") &&
-                        passport.ContainsKey("eyr") &&
-                        passport.ContainsKey("hgt") &&
-                        passport.ContainsKey("hcl") &&
-                        passport.ContainsKey("ecl") &&
-                        passport.ContainsKey("pid"))
-                    {
-                        valids++;
-                    }
-                }
-
-                Assert.That(valids, Is.EqualTo(190));
+                Assert.That(valid, Is.EqualTo(190));
             }
-
+            
             [Test]
             public void Day4_Part2()
+            {
+                var passports = GetPassports();
+
+                var valid = passports.Count(passport => ExpectedFields.All(passport.ContainsKey) &&
+                                                        Between(passport["byr"], 1920, 2002) &&
+                                                        Between(passport["iyr"], 2010, 2020) &&
+                                                        Between(passport["eyr"], 2020, 2030) &&
+                                                        ValidHeight(passport["hgt"]) &&
+                                                        ValidHairColor(passport["hcl"]) &&
+                                                        ValidEyeColor(passport["ecl"]) &&
+                                                        ValidPid(passport["pid"]));
+
+                Assert.That(valid, Is.EqualTo(121));
+            }
+            
+            private static IEnumerable<Dictionary<string, string>> GetPassports()
             {
                 var passports = new List<Dictionary<string, string>>();
                 var newPassport = new Dictionary<string, string>();
@@ -212,42 +199,14 @@ namespace AdventOfCode2020
                     }
                 }
 
-                var valids = 0;
-
-                foreach (var passport in passports)
-                {
-                    if (passport.ContainsKey("byr") &&
-                        passport.ContainsKey("iyr") &&
-                        passport.ContainsKey("eyr") &&
-                        passport.ContainsKey("hgt") &&
-                        passport.ContainsKey("hcl") &&
-                        passport.ContainsKey("ecl") &&
-                        passport.ContainsKey("pid"))
-                    {
-                        if (Between(passport["byr"], 1920, 2002) &&
-                            Between(passport["iyr"], 2010, 2020) &&
-                            Between(passport["eyr"], 2020, 2030) &&
-                            ValidHeight(passport["hgt"]) &&
-                            ValidHairColor(passport["hcl"]) &&
-                            ValidEyeColor(passport["ecl"]) &&
-                            ValidPid(passport["pid"]))
-                        {
-                            valids++;
-                        }
-                    }
-                }
-
-                Assert.That(valids, Is.EqualTo(121));
+                return passports;
             }
-            
+
             private static bool Between(string s, int min, int max) => int.TryParse(s, out var d) && d >= min && d <= max;
-            private bool ValidHeight(string hgt) => hgt.EndsWith("cm") ? Between(hgt[..^2], 150, 193) : Between(hgt[..^2], 59, 76);
-
-            private bool ValidHairColor(string hcl) => hcl.StartsWith("#") && hcl[1..].Length == 6 && hcl[1..].All(x => char.IsDigit(x) || (x >= 'a' && x <= 'f'));
-
-            private bool ValidEyeColor(string ecl) => ecl is "amb" or "blu" or "brn" or "gry" or "grn" or "hzl" or "oth";
-
-            private bool ValidPid(string pid) => pid.Length == 9 && pid.All(char.IsDigit);
+            private static bool ValidHeight(string hgt) => hgt.EndsWith("cm") ? Between(hgt[..^2], 150, 193) : Between(hgt[..^2], 59, 76);
+            private static bool ValidHairColor(string hcl) => hcl.StartsWith("#") && hcl[1..].Length == 6 && hcl[1..].All(x => char.IsDigit(x) || (x >= 'a' && x <= 'f'));
+            private static bool ValidEyeColor(string ecl) => ecl is "amb" or "blu" or "brn" or "gry" or "grn" or "hzl" or "oth";
+            private static bool ValidPid(string pid) => pid.Length == 9 && pid.All(char.IsDigit);
         }
 
         public class Day5
