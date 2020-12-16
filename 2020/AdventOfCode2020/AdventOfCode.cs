@@ -214,79 +214,45 @@ namespace AdventOfCode2020
             [Test]
             public void Part1()
             {
-                int maxSeatId = int.MinValue;
+                var seatIds = GetSeatIds();
                 
-                foreach (var line in File.ReadAllLines("Day5.txt"))
-                {
-                    var a = 0;
-                    var b = 128;
-                    
-                    foreach (var r in line[..7])
-                    {
-                        if (r == 'F') b = (a + b) / 2;
-                        else a = (a + b) / 2;
-                    }
-
-                    var row = a;
-
-                    a = 0;
-                    b = 8;
-                    
-                    foreach (var c in line[7..])
-                    {
-                        if (c == 'L') b = (a + b) / 2;
-                        else a = (a + b) / 2;
-                    }
-
-                    var col = a;
-                    var seatId = row * 8 + col;
-
-                    if (seatId > maxSeatId)
-                    {
-                        maxSeatId = seatId;
-                    }
-                }
-
-                Assert.That(maxSeatId, Is.EqualTo(978));
+                Assert.That(seatIds.Max(), Is.EqualTo(978));
             }
             
             [Test]
             public void Part2()
             {
-                var seats = new List<int>();
-                
-                foreach (var line in File.ReadAllLines("Day5.txt"))
+                var seatIds = GetSeatIds().ToHashSet();
+
+                for (var seatId = 1; seatId <= 1023; seatId++)
                 {
-                    var a = 0;
-                    var b = 128;
-                    
-                    foreach (var r in line[..7])
+                    if (seatIds.Contains(seatId - 1) && seatIds.Contains(seatId + 1) && !seatIds.Contains(seatId))
                     {
-                        if (r == 'F') b = (a + b) / 2;
-                        else a = (a + b) / 2;
+                        Assert.That(seatId, Is.EqualTo(727));
+                        return;
                     }
-
-                    var row = a;
-
-                    a = 0;
-                    b = 8;
-                    
-                    foreach (var c in line[7..])
-                    {
-                        if (c == 'L') b = (a + b) / 2;
-                        else a = (a + b) / 2;
-                    }
-
-                    var col = a;
-                    var seatId = row * 8 + col;
-                    seats.Add(seatId);
                 }
 
-                var v = seats.OrderBy(x => x).ToArray();
+                Assert.Fail();
+            }
+            
+            private static IEnumerable<int> GetSeatIds() =>
+                from code in File.ReadAllLines("Day5.txt") 
+                let row = DecodeRow(code) 
+                let column = DecodeColumn(code) 
+                select row * 8 + column;
 
-                for (var i = 0; i < 1031; i++)
-                    if (v.Contains(i-1) && v.Contains(i+1) && !v.Contains(i))
-                        Console.WriteLine(i);
+            private static int DecodeRow(string code) => BinarySearch(code[..7], 0, 128, 'F');
+            private static int DecodeColumn(string code) => BinarySearch(code[7..], 0, 8, 'L');
+            private static int BinarySearch(string code, int a, int b, char region)
+            {
+                foreach (var r in code)
+                {
+                    if (r == region) b = (a + b) / 2;
+                    else a = (a + b) / 2;
+                }
+                
+                return a;
             }
         }
 
