@@ -107,7 +107,7 @@ namespace AdventOfCode2020
         public class Day3
         {
             [Test]
-            public void Day3_Part1()
+            public void Part1()
             {
                 var input = File.ReadAllLines("Day3.txt").ToList();
                 
@@ -117,7 +117,7 @@ namespace AdventOfCode2020
             }
         
             [Test]
-            public void Day3_Part2()
+            public void Part2()
             {
                 var map = File.ReadAllLines("Day3.txt").ToList();
 
@@ -152,7 +152,7 @@ namespace AdventOfCode2020
             private readonly string[] ExpectedFields = { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
 
             [Test]
-            public void Day4_Part1()
+            public void Part1()
             {
                 var passports = GetPassports();
 
@@ -162,7 +162,7 @@ namespace AdventOfCode2020
             }
             
             [Test]
-            public void Day4_Part2()
+            public void Part2()
             {
                 var passports = GetPassports();
 
@@ -212,7 +212,7 @@ namespace AdventOfCode2020
         public class Day5
         {
             [Test]
-            public void Day5_Part1()
+            public void Part1()
             {
                 int maxSeatId = int.MinValue;
                 
@@ -251,7 +251,7 @@ namespace AdventOfCode2020
             }
             
             [Test]
-            public void Day5_Part2()
+            public void Part2()
             {
                 var seats = new List<int>();
                 
@@ -293,7 +293,7 @@ namespace AdventOfCode2020
         public class Day6
         {
             [Test]
-            public void Day6_Part1()
+            public void Part1()
             {
                 var answers = new HashSet<char>();
                 var result = 0;
@@ -316,7 +316,7 @@ namespace AdventOfCode2020
             }
         
             [Test]
-            public void Day6_Part2()
+            public void Part2()
             {
                 var answers = new HashSet<char>();
                 var result = 0;
@@ -350,7 +350,7 @@ namespace AdventOfCode2020
         public class Day7
         {
             [Test]
-            public void Day7_Part1()
+            public void Part1()
             {
                 var lines = File.ReadAllLines("Day7.txt");
                 var n = lines.Length;
@@ -406,7 +406,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day7_Part2()
+            public void Part2()
             {
                 var lines = File.ReadAllLines("Day7.txt");
                 var n = lines.Length;
@@ -447,7 +447,7 @@ namespace AdventOfCode2020
         public class Day8
         {
             [Test]
-            public void Day8_Part1()
+            public void Part1()
             {
                 var lines = File.ReadAllLines("Day8.txt");
                 var n = lines.Length;
@@ -479,7 +479,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day8_Part2()
+            public void Part2()
             {
                 var lines = File.ReadAllLines("Day8.txt");
                 var n = lines.Length;
@@ -537,7 +537,7 @@ namespace AdventOfCode2020
         public class Day9
         {
             [Test]
-            public void Day9_Part1()
+            public void Part1()
             {
                 var nums = File.ReadAllLines("Day9.txt").Select(BigInteger.Parse).ToList();
 
@@ -564,7 +564,7 @@ namespace AdventOfCode2020
             }
         
             [Test]
-            public void Day9_Part2()
+            public void Part2()
             {
                 var nums = File.ReadAllLines("Day9.txt").Select(BigInteger.Parse).ToList();
                 BigInteger n = 27911108;
@@ -594,7 +594,7 @@ namespace AdventOfCode2020
         public class Day10
         {
             [Test]
-            public void Day10_Part1()
+            public void Part1()
             {
                 var adapters = File.ReadAllLines("Day10.txt").Select(int.Parse).OrderBy(x => x).ToList();
 
@@ -613,7 +613,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day10_Part2()
+            public void Part2()
             {
                 var nums = File.ReadAllLines("Day10.txt").Select(int.Parse).OrderBy(x => x).ToList();
                 nums.Insert(0, 0);
@@ -638,7 +638,7 @@ namespace AdventOfCode2020
         public class Day11
         {
             [Test]
-            public void Day11_Part1()
+            public void Part1()
             {
                 var nums = File.ReadAllLines("Day11.txt");
                 var n = nums.Length;
@@ -691,7 +691,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day11_Part2()
+            public void Part2()
             {
                 var nums = File.ReadAllLines("Day11.txt");
                 var n = nums.Length;
@@ -789,7 +789,7 @@ namespace AdventOfCode2020
         public class Day12
         {
             [Test]
-            public void Day12_Part1()
+            public void Part1()
             {
                 var directions = File.ReadAllLines("Day12.txt");
 
@@ -822,7 +822,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day12_Part2()
+            public void Part2()
             {
                 var directions = File.ReadAllLines("Day12.txt");
 
@@ -863,7 +863,7 @@ namespace AdventOfCode2020
         public class Day13
         {
             [Test]
-            public void Day13_Part1()
+            public void Part1()
             {
                 var lines = File.ReadAllLines("Day13.txt");
                 var start = int.Parse(lines[0]);
@@ -891,18 +891,18 @@ namespace AdventOfCode2020
             [TestCase("67,x,7,59,61", 779210)]
             [TestCase("67,7,x,59,61", 1261476)]
             [TestCase("1789,37,47,1889", 1202161486)]
-            public void Day13_Part2_Examples(string input, long expected)
+            public void Part2_Examples(string input, long expected)
             {
-                Test_Day13_Part2(input, expected);
+                Test_Part2(input, expected);
             }
 
             [Test]
-            public void Day13_Part2()
+            public void Part2()
             {
-                Test_Day13_Part2(File.ReadAllLines("Day13.txt")[1], 526090562196173L);
+                Test_Part2(File.ReadAllLines("Day13.txt")[1], 526090562196173L);
             }
 
-            private void Test_Day13_Part2(string input, long expected)
+            private void Test_Part2(string input, long expected)
             {
                 var ids = new List<int>();
                 var t = new List<int>();
@@ -950,7 +950,7 @@ namespace AdventOfCode2020
         public class Day14
         {
             [Test]
-            public void Day14_Part1()
+            public void Part1()
             {
                 var lines = File.ReadAllLines("Day14.txt");
 
@@ -978,7 +978,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day14_Part2()
+            public void Part2()
             {
                 var lines = File.ReadAllLines("Day14.txt");
 
@@ -1040,7 +1040,7 @@ namespace AdventOfCode2020
             [TestCase("3,2,1", 438)]
             [TestCase("3,1,2", 1836)]
             [TestCase("19,0,5,1,10,13", 1015)]
-            public void Day15_Part1(string input, int expected)
+            public void Part1(string input, int expected)
             {
                 var nums = input.Split(',').Select(int.Parse).ToList();
 
@@ -1070,7 +1070,7 @@ namespace AdventOfCode2020
             [TestCase("3,2,1", 18)]
             [TestCase("3,1,2", 362)]
             [TestCase("19,0,5,1,10,13", 201)]
-            public void Day15_Part2(string input, int expected)
+            public void Part2(string input, int expected)
             {
                 var nums = input.Split(',').Select(int.Parse).ToList();
                 var lastIndex = new Dictionary<int, int>();
@@ -1106,7 +1106,7 @@ namespace AdventOfCode2020
         public class Day16
         {
             [Test]
-            public void Day16_Part1()
+            public void Part1()
             {
                 var input = File.ReadAllText("Day16.txt");
                 var parts = input.Split("\r\n\r\n");
@@ -1136,7 +1136,7 @@ namespace AdventOfCode2020
             }
 
             [Test]
-            public void Day16_Part2()
+            public void Part2()
             {
                 var input = File.ReadAllText("Day16.txt");
                 var parts = input.Split("\r\n\r\n");
