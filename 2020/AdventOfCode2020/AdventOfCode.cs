@@ -15,35 +15,28 @@ namespace AdventOfCode2020
             [Test]
             public void Part1()
             {
-                var input = File.ReadAllLines("Day1.txt").Select(int.Parse).ToList();
-            
-                for (var i = 0; i < input.Count; i++)
-                for (var j = i + 1; j < input.Count; j++)
-                    if (input[i] + input[j] == 2020)
-                    {
-                        Assert.That(input[i] * input[j], Is.EqualTo(1010884));
-                        Assert.Pass();
-                    }
+                var report = File.ReadAllLines("Day1.txt").Select(int.Parse).ToList();
 
-                Assert.Fail();
+                var result = from x in report
+                             from y in report
+                             where x + y == 2020
+                             select x * y;
+
+                Assert.That(result.First(), Is.EqualTo(1010884));
             }
         
             [Test]
             public void Part2()
             {
-                var input = File.ReadAllLines("Day1.txt").Select(int.Parse).ToList();
+                var report = File.ReadAllLines("Day1.txt").Select(int.Parse).ToList();
             
-                for (var i = 0; i < input.Count; i++)
-                for (var j = i + 1; j < input.Count; j++)
-                for (var k = j + 1; k < input.Count; k++)
-                    if (input[i] + input[j] + input[k] == 2020)
-                    {
-                        var result = input[i] * input[j] * input[k];
-                        Assert.That(result, Is.EqualTo(253928438));
-                        Assert.Pass();
-                    }
+                var result = from x in report
+                             from y in report
+                             from z in report
+                             where x + y + z == 2020
+                             select x * y * z;
 
-                Assert.Fail();
+                Assert.That(result.First(), Is.EqualTo(253928438));
             }
         }
 
