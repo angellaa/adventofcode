@@ -45,46 +45,62 @@ namespace AdventOfCode2020
             [Test]
             public void Part1()
             {
-                var input = File.ReadAllLines("Day2.txt").ToList();
-                var validCount = 0;
+                var list = File.ReadAllLines("Day2.txt").ToList();
+                var validPasswords = list.Count(entry => PasswordEntry1.Parse(entry).Valid());
 
-                foreach (var line in input)
+                Assert.That(validPasswords, Is.EqualTo(467));
+            }
+            
+            [Test]
+            public void Part2()
+            {
+                var list = File.ReadAllLines("Day2.txt").ToList();
+                var validPasswords = list.Count(entry => PasswordEntry2.Parse(entry).Valid());
+                
+                Assert.That(validPasswords, Is.EqualTo(441));
+            }
+            
+            private record PasswordEntry1(int LowestNumber, int HighestNumber, char Letter, string Password)
+            {
+                public static PasswordEntry1 Parse(string s)
                 {
-                    var parts = line.Split();
+                    var parts = s.Split();
                     var min = int.Parse(parts[0].Split('-')[0]);
                     var max = int.Parse(parts[0].Split('-')[1]);
                     var letter = parts[1][0];
                     var password = parts[2];
-                    var count = password.Count(x => x == letter);
-                    if (count >= min && count <= max)
-                        validCount++;
+                    
+                    return new PasswordEntry1(min, max, letter, password);
                 }
 
-                Assert.That(validCount, Is.EqualTo(467));
-            }    
-        
-            [Test]
-            public void Part2()
-            {
-                var input = File.ReadAllLines("Day2.txt").ToList();
-                var validCount = 0;
-
-                foreach (var line in input)
+                public bool Valid()
                 {
-                    var parts = line.Split();
-                    var firstIndex = int.Parse(parts[0].Split('-')[0]);
-                    var secondIndex = int.Parse(parts[0].Split('-')[1]);
+                    var count = Password.Count(x => x == Letter);
+                    return count >= LowestNumber && count <= HighestNumber;
+                }
+            }
+            
+            private record PasswordEntry2(int Position1, int Position2, char Letter, string Password)
+            {
+                public static PasswordEntry2 Parse(string s)
+                {
+                    var parts = s.Split();
+                    var position1 = int.Parse(parts[0].Split('-')[0]) - 1;
+                    var position2 = int.Parse(parts[0].Split('-')[1]) - 1;
                     var letter = parts[1][0];
                     var password = parts[2];
-                
-                    var a = password[firstIndex - 1];
-                    var b = password[secondIndex - 1];
-                
-                    if ((a == letter && b != letter) || (a != letter && b == letter))
-                        validCount++;
+                    
+                    return new PasswordEntry2(position1, position2, letter, password);
                 }
 
-                Assert.That(validCount, Is.EqualTo(441));
+                public bool Valid()
+                {
+                    var firstLetter = Password[Position1];
+                    var secondLetter = Password[Position2];
+
+                    return firstLetter == Letter && secondLetter != Letter || 
+                           firstLetter != Letter && secondLetter == Letter;
+                }
             }
         }
         
