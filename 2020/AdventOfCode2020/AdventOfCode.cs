@@ -110,6 +110,7 @@ namespace AdventOfCode2020
             public void Day3_Part1()
             {
                 var input = File.ReadAllLines("Day3.txt").ToList();
+                
                 var trees = CountTrees(input, 3, 1);
 
                 Assert.That(trees, Is.EqualTo(198));
@@ -118,27 +119,28 @@ namespace AdventOfCode2020
             [Test]
             public void Day3_Part2()
             {
-                var input = File.ReadAllLines("Day3.txt").ToList();
-                var treesProduct = 1L * 
-                                   CountTrees(input, 1, 1) *
-                                   CountTrees(input, 3, 1) *
-                                   CountTrees(input, 5, 1) *
-                                   CountTrees(input, 7, 1) *
-                                   CountTrees(input, 1, 2);
+                var map = File.ReadAllLines("Day3.txt").ToList();
+
+                var treesProduct = CountTrees(map, 1, 1) *
+                                   CountTrees(map, 3, 1) *
+                                   CountTrees(map, 5, 1) *
+                                   CountTrees(map, 7, 1) *
+                                   CountTrees(map, 1, 2);
 
                 Assert.That(treesProduct, Is.EqualTo(5140884672));
             }
             
-            private static int CountTrees(List<string> input, int right, int down)
+            private static long CountTrees(IReadOnlyList<string> map, int right, int down)
             {
-                var trees = 0;
-                var x = 0;
+                var length = map[0].Length;
+                var trees = 0L;
+                var c = 0;
 
-                for (var index = 0; index < input.Count; index += down)
+                for (var r = 0; r < map.Count; r += down)
                 {
-                    var row = input[index];
-                    if (row[x] == '#') trees++;
-                    x = (x + right) % input[0].Length;
+                    var row = map[r];
+                    if (row[c] == '#') trees++;
+                    c = (c + right) % length;
                 }
 
                 return trees;
