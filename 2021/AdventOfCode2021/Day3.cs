@@ -6,56 +6,72 @@ namespace AdventOfCode2022
     public class Day3
     {
         List<string> binaryNumbers;
-        int bits;
-        int n;
+        int numberOfBits;
 
         [SetUp]
         public void SetUp()
         {
             binaryNumbers = File.ReadAllLines("Day3.txt").ToList();
-            n = binaryNumbers.Count;
-            bits = binaryNumbers[0].Length;
+            numberOfBits = binaryNumbers[0].Length;
         }
 
         [Test]
         public void Part1()
         {
-            var gamma = new string(Enumerable.Range(0, bits)
-                                  .Select(i =>
-                                    binaryNumbers.Count(c => c[i] == '1') > (n / 2) ? '1' : '0'
-                                  ).ToArray());
+            var gammaRate = new string(Enumerable.Range(0, numberOfBits)
+                                                 .Select(i => binaryNumbers.Count(c => c[i] == '1') > 
+                                                              binaryNumbers.Count(c => c[i] == '0') ? '1' : '0')
+                                                 .ToArray());
 
-            var epsilon = new string(gamma.Select(x => x == '1' ? '0' : '1').ToArray());
+            var epsilonRate = new string(gammaRate.Select(x => x == '1' ? '0' : '1')
+                                                  .ToArray());
 
-            Assert.That(Convert.ToInt64(gamma, 2) * Convert.ToInt64(epsilon, 2), Is.EqualTo(3912944));
+            var powerConsumption = Convert.ToInt32(gammaRate, 2) * Convert.ToInt32(epsilonRate, 2);
+
+            Assert.That(powerConsumption, Is.EqualTo(3912944));
         }
 
         [Test]
         public void Part2()
         {
+            var oxygenGeneratorRating = GetOxygenGeneratorRating();
+            var co2ScrubberRating = GetCo2ScrubberRating();
+
+            var lifeSupportRating = oxygenGeneratorRating * co2ScrubberRating;
+
+            Assert.That(lifeSupportRating, Is.EqualTo(4996233));
+        }
+
+        private int GetOxygenGeneratorRating()
+        {
             var numbers = binaryNumbers.ToList();
 
-            for (var i = 0; i < bits; i++)
+            for (var i = 0; i < numberOfBits; i++)
             {
-                var most = numbers.Count(c => c[i] == '1') >= numbers.Count(c => c[i] == '0') ? '1' : '0';
-                numbers.RemoveAll(x => x[i] != most);
+                var mostCommonValue = numbers.Count(c => c[i] == '1') >= numbers.Count(c => c[i] == '0') ? '1' : '0';
+
+                numbers.RemoveAll(x => x[i] != mostCommonValue);
+
                 if (numbers.Count == 1) break;
             }
 
-            var oxygen = numbers.First();
+            return Convert.ToInt32(numbers.First(), 2);
+        }
 
-            numbers = binaryNumbers.ToList();
+        private int GetCo2ScrubberRating()
+        {
+            var numbers = binaryNumbers.ToList();
 
-            for (var i = 0; i < bits; i++)
+            for (var i = 0; i < numberOfBits; i++)
             {
-                var least = numbers.Count(c => c[i] == '1') < numbers.Count(c => c[i] == '0') ? '1' : '0';
-                numbers.RemoveAll(x => x[i] != least);
+                var leastCommonValue = numbers.Count(c => c[i] == '1') < numbers.Count(c => c[i] == '0') ? '1' : '0';
+
+                numbers.RemoveAll(x => x[i] != leastCommonValue);
+
                 if (numbers.Count == 1) break;
             }
 
-            var co2 = numbers.First();
-
-            Assert.That(Convert.ToInt64(oxygen, 2) * Convert.ToInt64(co2, 2), Is.EqualTo(4996233));
+            return Convert.ToInt32(numbers.First(), 2);
         }
     }
 }
