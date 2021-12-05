@@ -53,21 +53,14 @@ namespace AdventOfCode2022
                     for (var i = 0; i < 5; i++)
                         for (var j = 0; j < 5; j++)
                             if (board[i][j] == number)
-                            {
                                 board[i][j] = -1;
-                            }
                 }
 
                 foreach (var board in boards)
                 {
                     for (var i = 0; i < 5; i++)
-                        if (board[i].Sum() == -5)
-                            return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
-
-                    for (var i = 0; i < 5; i++)
-                        if (board.Select(x => x[i]).Sum() == -5)
-                            return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
-                }
+                        if (board[i].Sum() == -5 || board.Select(x => x[i]).Sum() == -5)
+                            return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;                }
             }
 
             return 0;
@@ -75,8 +68,7 @@ namespace AdventOfCode2022
 
         private int Bingo2()
         {
-            var lastBoard = new List<List<int>>();
-            var lastResult = 0;
+            var result = 0;
 
             foreach (var number in numbers)
             {
@@ -85,31 +77,28 @@ namespace AdventOfCode2022
                     for (var i = 0; i < 5; i++)
                         for (var j = 0; j < 5; j++)
                             if (board[i][j] == number)
-                            {
                                 board[i][j] = -1;
-                            }
                 }
 
-                var boardsToRemove = new List<List<List<int>>>();
+                var winningBoards = new List<List<List<int>>>();
 
                 foreach (var board in boards)
                 {
                     for (var i = 0; i < 5; i++)
                         if (board[i].Sum() == -5 || board.Select(x => x[i]).Sum() == -5)
                         {
-                            lastBoard = board;
-                            lastResult = lastBoard.SelectMany(x => x).Where(x => x != -1).Sum() * number;
-                            boardsToRemove.Add(board);
+                            result = board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
+                            winningBoards.Add(board);
                         }
                 }
 
-                foreach (var board in boardsToRemove)
+                foreach (var board in winningBoards)
                 {
                     boards.Remove(board);
                 }
             }
 
-            return lastResult;
+            return result;
         }
     }
 }
