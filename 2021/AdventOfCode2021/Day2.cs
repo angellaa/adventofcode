@@ -10,45 +10,48 @@ namespace AdventOfCode2022
         [SetUp]
         public void SetUp()
         {
-            commands = File.ReadAllLines("Day2.txt").Select(x => (x.Split()[0], int.Parse(x.Split()[1]))).ToList();
+            commands = File.ReadAllLines("Day2.txt")
+                           .Select(x => x.Split())
+                           .Select(x => (x[0], int.Parse(x[1])))
+                           .ToList();
         }
 
         [Test]
         public void Part1()
         {
-            var horizontal = 0;
+            var horizontalPosition = 0;
             var depth = 0;
 
-            foreach (var (Name, Value) in commands)
+            foreach (var (name, value) in commands)
             {
-                if (Name == "forward") horizontal += Value;
-                if (Name == "down")    depth += Value;
-                if (Name == "up")      depth -= Value;
+                if (name == "forward") horizontalPosition += value;
+                if (name == "down")    depth += value;
+                if (name == "up")      depth -= value;
             }
 
-            Assert.That(horizontal * depth, Is.EqualTo(2272262));
+            Assert.That(horizontalPosition * depth, Is.EqualTo(2272262));
         }
 
         [Test]
         public void Part2()
         {
-            var horizontal = 0;
+            var horizontalPosition = 0;
             var depth = 0;
             var aim = 0;
 
-            foreach (var (Name, Value) in commands)
+            foreach (var (name, value) in commands)
             {
-                if (Name == "forward")
+                if (name == "forward")
                 {
-                    horizontal += Value;
-                    depth += aim * Value;
+                    horizontalPosition += value;
+                    depth += aim * value;
                 }
 
-                if (Name == "down") aim += Value;
-                if (Name == "up")   aim -= Value;
+                if (name == "down") aim += value;
+                if (name == "up")   aim -= value;
             }
 
-            Assert.That(horizontal * depth, Is.EqualTo(2134882034));
+            Assert.That(horizontalPosition * depth, Is.EqualTo(2134882034));
         }
     }
 }
