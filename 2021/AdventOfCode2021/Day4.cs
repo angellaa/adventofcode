@@ -5,26 +5,24 @@ namespace AdventOfCode2022
     [TestFixture]
     public class Day4
     {
-        List<string> input;
         List<int> numbers;
         List<List<List<int>>> boards = new();
-        int n;
 
         [SetUp]
         public void SetUp()
         {
-            input = File.ReadAllLines("Day4.txt").ToList();
+            var input = File.ReadAllLines("Day4.txt").ToList();
+            var numberOfBoards = (input.Count - 1) / 6;
 
             numbers = input[0].Split(",").Select(x => int.Parse(x)).ToList();
-            n = (input.Count - 1) / 6;            
 
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < numberOfBoards; i++)
             {
                 var board = new List<List<int>>();
 
-                for (int j = 0; j < 5; j++)
+                for (int row = 0; row < 5; row++)
                 {
-                    board.Add(input[2 + 6 * i + j].Split().Where(x => x.Trim() != "").Select(x => int.Parse(x)).ToList());
+                    board.Add(input[2 + 6 * i + row].Split().Where(x => x.Trim() != "").Select(x => int.Parse(x)).ToList());
                 }
 
                 boards.Add(board);
@@ -68,26 +66,26 @@ namespace AdventOfCode2022
 
         private int Bingo2()
         {
-            var result = 0;
+            var finalScore = 0;
 
             foreach (var number in numbers)
             {
                 foreach (var board in boards)
                 {
-                    for (var i = 0; i < 5; i++)
-                        for (var j = 0; j < 5; j++)
-                            if (board[i][j] == number)
-                                board[i][j] = -1;
+                    for (var r = 0; r < 5; r++)
+                        for (var c = 0; c < 5; c++)
+                            if (board[r][c] == number)
+                                board[r][c] = -1;
                 }
 
                 var winningBoards = new List<List<List<int>>>();
 
                 foreach (var board in boards)
                 {
-                    for (var i = 0; i < 5; i++)
-                        if (board[i].Sum() == -5 || board.Select(x => x[i]).Sum() == -5)
+                    for (var r = 0; r < 5; r++)
+                        if (board[r].Sum() == -5 || board.Select(x => x[r]).Sum() == -5)
                         {
-                            result = board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
+                            finalScore = board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
                             winningBoards.Add(board);
                         }
                 }
@@ -98,7 +96,7 @@ namespace AdventOfCode2022
                 }
             }
 
-            return result;
+            return finalScore;
         }
     }
 }
