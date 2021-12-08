@@ -1,142 +1,99 @@
 ﻿using NUnit.Framework;
-using System.Diagnostics;
 
 namespace AdventOfCode2022
 {
     [TestFixture]
     public class Day8
-    {       
-        [Test]
-        public void Part1_Example()
+    {
+        List<(List<string> SignalPattern, List<string> Display)> input;
+
+        [SetUp]
+        public void SetUp()
         {
-            var input = Load(Input1);
+            input = new();
 
-            var count = input.SelectMany(x => x.Display).Count(x => x.Count() is 2 or 3 or 4 or 7);
+            foreach (var line in File.ReadAllText("Day8.txt").Split("\n"))
+            {
+                var digits = line.Split("|")[0].Split().Where(x => x.Trim() != "").ToList();
+                var display = line.Split("|")[1].Split().Where(x => x.Trim() != "").ToList();
 
-            Assert.That(count, Is.EqualTo(26));
+                input.Add((digits, display));
+            }
         }
 
         [Test]
-        public void Part1_Real()
+        public void Part1()
         {
-            var input = Load(File.ReadAllText("Day8.txt"));
-
             var count = input.SelectMany(x => x.Display).Count(x => x.Count() is 2 or 3 or 4 or 7);
 
             Assert.That(count, Is.EqualTo(534));
         }
 
         [Test]
-        public void Part2_Example()
-        {
-            var input = Load(Input1);
-
-            var result = Crack(input);
-
-            Assert.That(result, Is.EqualTo(61229));
-        }
-
-        [Test]
-        public void Part2_Real()
-        {
-            var input = Load(File.ReadAllText("Day8.txt"));
-
-            var result = Crack(input);
-
-            Assert.That(result, Is.EqualTo(1070188));
-        }
-        private static int Crack(List<(List<string> Digits, List<string> Display)> input)
+        public void Part2()
         {
             int result = 0;
 
-            foreach (var (digits, display) in input)
+            foreach (var (signalPatterns, display) in input)
             {
-                var one = Sorted(digits.First(x => x.Count() == 2));
-                var seven = Sorted(digits.First(x => x.Count() == 3));
-                var four = Sorted(digits.First(x => x.Count() == 4));
-                var eight = Sorted(digits.First(x => x.Count() == 7));
+                var one = signalPatterns.First(x => x.Length == 2).Sort();
+                var four = signalPatterns.First(x => x.Length == 4).Sort();
+                var seven = signalPatterns.First(x => x.Length == 3).Sort();
+                var eight = signalPatterns.First(x => x.Length == 7).Sort();
 
-                var digitsWithFiveSegments = digits.Where(x => x.Count() == 5).ToList();
-                var digitsWithSixSegments = digits.Where(x => x.Count() == 6).ToList();
+                var fiveSegmentsSignalPatterns = signalPatterns.Where(x => x.Length == 5).ToArray();
+                var sixSegmentsSignalPatternsAndOne = signalPatterns.Where(x => x.Length == 6).Union(new[] { one }).ToArray();
 
-                digitsWithSixSegments.Add(one);
-
-                var three = Sorted(Shared(digitsWithFiveSegments) + one);
-                var nine = Sorted(new string(digitsWithSixSegments.Where(x => Except(new List<string>() { x, three }).Count() == 1).First()));
+                var three = (GetSharedSegments(fiveSegmentsSignalPatterns) + one).Sort();
+                var nine = new string(sixSegmentsSignalPatternsAndOne.Where(x => GetNotSharedSegment(x, three).Count() == 1).First()).Sort();
 
                 var a = seven.Except(one).First();
-                var b = Except(new List<string> { nine, three }).First();
-                var f = Shared(digitsWithSixSegments).First();
+                var b = GetNotSharedSegment(three, nine).First();
+                var f = GetSharedSegments(sixSegmentsSignalPatternsAndOne).First();
                 var c = one.First(x => x != f);
-                var d = Except(new List<string> { four, $"{b}{c}{f}" }).First();
-                var g = Except(new List<string> { nine, $"{a}{b}{c}{d}{f}" }).First();
-                var e = Except(new List<string> { "abcdefg", $"{a}{b}{c}{d}{f}{g}" }).First();
+                var d = GetNotSharedSegment(four, $"{b}{c}{f}").First();
+                var g = GetNotSharedSegment(nine, $"{a}{b}{c}{d}{f}").First();
+                var e = GetNotSharedSegment("abcdefg", $"{a}{b}{c}{d}{f}{g}").First();
 
-                var zero = Sorted($"{a}{b}{c}{e}{f}{g}");
-                var two = Sorted($"{a}{c}{d}{e}{g}");
-                var five = Sorted($"{a}{b}{d}{f}{g}");
-                var six = Sorted($"{a}{b}{d}{e}{f}{g}");
+                var zero = $"{a}{b}{c}{e}{f}{g}".Sort();
+                var two = $"{a}{c}{d}{e}{g}".Sort();
+                var five = $"{a}{b}{d}{f}{g}".Sort();
+                var six = $"{a}{b}{d}{e}{f}{g}".Sort();
 
-                var number = "";
-                foreach (var digit in display.Select(x => Sorted(x)))
+                var map = new Dictionary<string, char>
                 {
-                    if (digit == zero) number += "0";
-                    else if (digit == one) number += "1";
-                    else if (digit == two) number += "2";
-                    else if (digit == three) number += "3";
-                    else if (digit == four) number += "4";
-                    else if (digit == five) number += "5";
-                    else if (digit == six) number += "6";
-                    else if (digit == seven) number += "7";
-                    else if (digit == eight) number += "8";
-                    else if (digit == nine) number += "9";
-                    else Debugger.Break();
-                }
+                    [zero] = '0',
+                    [one] = '1',
+                    [two] = '2',
+                    [three] = '3',
+                    [four] = '4',
+                    [five] = '5',
+                    [six] = '6',
+                    [seven] = '7',
+                    [eight] = '8',
+                    [nine] = '9',
+                };
 
-                result += int.Parse(number);
+                var outputValue = int.Parse(new(display.Select(x => x.Sort()).Select(x => map[x]).ToArray()));
+
+                result += outputValue;
             }
 
-            return result;
+            Assert.That(result, Is.EqualTo(1070188));
         }
 
-        static string Sorted(string s) => new(s.OrderBy(x => x).ToArray());
+        static string GetSharedSegments(params string[] digits) => new("abcdefg".Where(x => digits.All(c => c.Contains(x))).ToArray());
 
-        static string Shared(List<string> digits)
+        static string GetNotSharedSegment(params string[] digits)
         {
-            return new string("abcdefg".Where(x => digits.All(c => c.Contains(x))).ToArray());
+            var sharedSegments = GetSharedSegments(digits);
+
+            return new("abcdefg".Where(x => !sharedSegments.Contains(x) && digits.Any(d => d.Contains(x))).ToArray());
         }
+    }
 
-        static string Except(List<string> digits)
-        {
-            var shared = Shared(digits);
-
-            return new string("abcdefg".Where(x => !shared.Contains(x) && digits.Any(d => d.Contains(x))).ToArray());
-        }
-
-        static List<(List<string> Digits, List<string> Display)> Load(string input)
-        {
-            List<(List<string> dDgits, List<string> Display)> result = new();
-
-            foreach (var line in input.Split("\n"))
-            {
-                var digits = line.Split("|")[0].Split().Where(x => x.Trim() != "").ToList();
-                var display = line.Split("|")[1].Split().Where(x => x.Trim() != "").ToList();
-
-                result.Add((digits, display));
-            }
-
-            return result;
-        }
-
-        static string Input1 = @"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
-edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
-fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
-fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
-aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
-fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
-dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
-bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
-egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
-gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce";
+    public static class StringExtensions
+    {
+        public static string Sort(this string s) => new(s.OrderBy(x => x).ToArray());
     }
 }
