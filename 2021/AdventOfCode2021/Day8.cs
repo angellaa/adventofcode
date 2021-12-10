@@ -5,7 +5,7 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day8
 {
-    List<(List<string> SignalPattern, List<string> Display)> input;
+    private List<(List<string> SignalPattern, List<string> Display)> input;
 
     [SetUp]
     public void SetUp()
@@ -32,7 +32,7 @@ public class Day8
     [Test]
     public void Part2()
     {
-        int result = 0;
+        var result = 0;
 
         foreach (var (signalPatterns, display) in input)
         {
@@ -45,7 +45,7 @@ public class Day8
             var sixSegmentsSignalPatternsAndOne = signalPatterns.Where(x => x.Length == 6).Union(new[] { one }).ToArray();
 
             var three = (GetSharedSegments(fiveSegmentsSignalPatterns) + one).Sort();
-            var nine = new string(sixSegmentsSignalPatternsAndOne.Where(x => GetNotSharedSegment(x, three).Count() == 1).First()).Sort();
+            var nine = new string(sixSegmentsSignalPatternsAndOne.First(x => GetNotSharedSegment(x, three).Count() == 1)).Sort();
 
             var a = seven.Except(one).First();
             var b = GetNotSharedSegment(three, nine).First();
@@ -80,15 +80,15 @@ public class Day8
         }
 
         Assert.That(result, Is.EqualTo(1070188));
-    }
 
-    static string GetSharedSegments(params string[] digits) => new("abcdefg".Where(x => digits.All(c => c.Contains(x))).ToArray());
+        string GetSharedSegments(params string[] digits) => new("abcdefg".Where(x => digits.All(c => c.Contains(x))).ToArray());
 
-    static string GetNotSharedSegment(params string[] digits)
-    {
-        var sharedSegments = GetSharedSegments(digits);
+        string GetNotSharedSegment(params string[] digits)
+        {
+            var sharedSegments = GetSharedSegments(digits);
 
-        return new("abcdefg".Where(x => !sharedSegments.Contains(x) && digits.Any(d => d.Contains(x))).ToArray());
+            return new("abcdefg".Where(x => !sharedSegments.Contains(x) && digits.Any(d => d.Contains(x))).ToArray());
+        }
     }
 }
 
