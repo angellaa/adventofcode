@@ -5,16 +5,16 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day9
 {
-    List<string> input;
-    bool[,] visited;
-    int n, m;
+    private List<string> heightMap;
+    private bool[,] visited;
+    private int rows, columns;
 
     [SetUp]
     public void SetUp()
     {
-        input = File.ReadAllLines("Day9.txt").ToList();
-        n = input.Count;
-        m = input[0].Length;
+        heightMap = File.ReadAllLines("Day9.txt").ToList();
+        rows = heightMap.Count;
+        columns = heightMap[0].Length;
     }
 
     [Test]
@@ -22,82 +22,58 @@ public class Day9
     {
         var result = 0;
 
-        for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++)
-            result += Risk(i, j);
-
-        Assert.That(result, Is.EqualTo(478));
-    }
-
-    private int Risk(int i, int j)
-    {
-        var value = Value(i, j);
-
-        if (value < Value(i-1, j) &&
-            value < Value(i+1, j) &&
-            value < Value(i, j-1) &&
-            value < Value(i, j+1))
+        for (var r = 0; r < rows; r++)
+        for (var c = 0; c < columns; c++)
         {
-            return 1 + value;
+            result += Risk(r, c);
         }
 
-        return 0;
-    }
+        Assert.That(result, Is.EqualTo(478));
 
-    private int Value(int i, int j)
-    {
-        if (i < 0 || i >= n || j < 0 || j >= m) return int.MaxValue;
+        int Risk(int r, int c)
+        {
+            var height = Value(r, c);
 
-        return input[i][j] - '0';
+            return height < Value(r - 1, c)  && height < Value(r + 1, c) && height < Value(r, c - 1) && height < Value(r, c + 1) 
+                    ? 1 + height 
+                    : 0;
+        }
     }
 
     [Test]
     public void Part2()
     {
-        long result = 1;
-        var basins = new List<long>();
+        var basinSizes = new List<long>();
 
-        for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++)
-            basins.Add(Size(i, j));
-
-        var largest = basins.OrderByDescending(x => x).Take(3);
-
-        foreach (var large in largest) result *= large;
-            
-        Assert.That(result, Is.EqualTo(1327014));
-    }
-
-    private int Size(int i, int j)
-    {
-        var value = Value(i, j);
-
-        if (value < Value(i - 1, j) &&
-            value < Value(i + 1, j) &&
-            value < Value(i, j - 1) &&
-            value < Value(i, j + 1))
+        for (var r = 0; r < rows; r++)
+        for (var c = 0; c < columns; c++)
         {
-            visited = new bool[n, m];
-            return Basin(i, j);
+            var value = Value(r, c);
+
+            if (value < Value(r - 1, c) && value < Value(r + 1, c) && value < Value(r, c - 1) && value < Value(r, c + 1))
+            {
+                visited = new bool[rows, columns];
+                var basinSize = BasinSize(r, c);
+
+                basinSizes.Add(basinSize);
+            }
         }
 
-        return 1;
+        var result = basinSizes.OrderByDescending(x => x).Take(3).Aggregate(1L, (x, y) => x * y);
+
+        Assert.That(result, Is.EqualTo(1327014));
+
+        int BasinSize(int r, int c)
+        {
+            if (Value(r, c) == 9 || Visited(r, c)) return 0;
+
+            visited[r, c] = true;
+
+            return 1 + BasinSize(r - 1, c) + BasinSize(r + 1, c) + BasinSize(r, c - 1) + BasinSize(r, c + 1);
+        }
+
+        bool Visited(int r, int c) => r < 0 || r >= rows || c < 0 || c >= columns || visited[r, c];
     }
 
-    private bool Visited(int i, int j)
-    {
-        if (i < 0 || i >= n || j < 0 || j >= m) return true;
-
-        return visited[i,j];
-    }
-
-    private int Basin(int i, int j)
-    {
-        var value = Value(i, j);
-        if (value == 9 || Visited(i, j)) return 0;
-
-        visited[i,j] = true;
-
-        return 1 + Basin(i - 1, j) + Basin(i + 1, j) + Basin(i, j - 1) + Basin(i, j + 1);
-    }
+    private int Value(int r, int c) => r < 0 || r >= rows || c < 0 || c >= columns ? int.MaxValue : heightMap[r][c] - '0';
 }
