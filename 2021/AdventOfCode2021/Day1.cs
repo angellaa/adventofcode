@@ -1,45 +1,44 @@
 ﻿using NUnit.Framework;
 
-namespace AdventOfCode2021
+namespace AdventOfCode2021;
+
+[TestFixture]
+public class Day1
 {
-    [TestFixture]
-    public class Day1
+    private List<int> depths;
+
+    [SetUp]
+    public void SetUp()
     {
-        private List<int> depths;
+        depths = File.ReadAllLines("Day1.txt").Select(x => int.Parse(x)).ToList();
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public void Part1()
+    {
+        var result = 0;
+
+        for (int i = 1; i < depths.Count; i++)
         {
-            depths = File.ReadAllLines("Day1.txt").Select(x => int.Parse(x)).ToList();
+            if (depths[i] > depths[i - 1]) result++;
         }
 
-        [Test]
-        public void Part1()
-        {
-            var result = 0;
+        Assert.That(result, Is.EqualTo(1676));
+    }
 
-            for (int i = 1; i < depths.Count; i++)
+    [Test]
+    public void Part2()
+    {
+        var result = 0;
+
+        for (int i = 3; i < depths.Count; i++)
+        {
+            if (depths[i] + depths[i - 1] + depths[i - 2] > depths[i - 1] + depths[i - 2] + depths[i - 3])
             {
-                if (depths[i] > depths[i - 1]) result++;
+                result++;
             }
-
-            Assert.That(result, Is.EqualTo(1676));
         }
 
-        [Test]
-        public void Part2()
-        {
-            var result = 0;
-
-            for (int i = 3; i < depths.Count; i++)
-            {
-                if (depths[i] + depths[i - 1] + depths[i - 2] > depths[i - 1] + depths[i - 2] + depths[i - 3])
-                {
-                    result++;
-                }
-            }
-
-            Assert.That(result, Is.EqualTo(1706));
-        }
+        Assert.That(result, Is.EqualTo(1706));
     }
 }

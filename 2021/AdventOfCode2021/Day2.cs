@@ -1,57 +1,56 @@
 ﻿using NUnit.Framework;
 
-namespace AdventOfCode2021
+namespace AdventOfCode2021;
+
+[TestFixture]
+public class Day2
 {
-    [TestFixture]
-    public class Day2
+    List<(string Name, int Value)> commands;
+
+    [SetUp]
+    public void SetUp()
     {
-        List<(string Name, int Value)> commands;
+        commands = File.ReadAllLines("Day2.txt")
+            .Select(x => x.Split())
+            .Select(x => (x[0], int.Parse(x[1])))
+            .ToList();
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public void Part1()
+    {
+        var horizontalPosition = 0;
+        var depth = 0;
+
+        foreach (var (name, value) in commands)
         {
-            commands = File.ReadAllLines("Day2.txt")
-                           .Select(x => x.Split())
-                           .Select(x => (x[0], int.Parse(x[1])))
-                           .ToList();
+            if (name == "forward") horizontalPosition += value;
+            if (name == "down")    depth += value;
+            if (name == "up")      depth -= value;
         }
 
-        [Test]
-        public void Part1()
-        {
-            var horizontalPosition = 0;
-            var depth = 0;
+        Assert.That(horizontalPosition * depth, Is.EqualTo(2272262));
+    }
 
-            foreach (var (name, value) in commands)
+    [Test]
+    public void Part2()
+    {
+        var horizontalPosition = 0;
+        var depth = 0;
+        var aim = 0;
+
+        foreach (var (name, value) in commands)
+        {
+            if (name == "forward")
             {
-                if (name == "forward") horizontalPosition += value;
-                if (name == "down")    depth += value;
-                if (name == "up")      depth -= value;
+                horizontalPosition += value;
+                depth += aim * value;
             }
 
-            Assert.That(horizontalPosition * depth, Is.EqualTo(2272262));
+            if (name == "down") aim += value;
+            if (name == "up")   aim -= value;
         }
 
-        [Test]
-        public void Part2()
-        {
-            var horizontalPosition = 0;
-            var depth = 0;
-            var aim = 0;
-
-            foreach (var (name, value) in commands)
-            {
-                if (name == "forward")
-                {
-                    horizontalPosition += value;
-                    depth += aim * value;
-                }
-
-                if (name == "down") aim += value;
-                if (name == "up")   aim -= value;
-            }
-
-            Assert.That(horizontalPosition * depth, Is.EqualTo(2134882034));
-        }
+        Assert.That(horizontalPosition * depth, Is.EqualTo(2134882034));
     }
 }
