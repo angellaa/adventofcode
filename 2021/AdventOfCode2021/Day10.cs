@@ -5,7 +5,7 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day10
 {
-    List<string> lines;
+    private List<string> lines;
 
     [SetUp]
     public void SetUp()
@@ -13,7 +13,7 @@ public class Day10
         lines = File.ReadAllLines("Day10.txt").ToList();
     }
 
-    private static Dictionary<char, char> match = new()
+    private static readonly Dictionary<char, char> closingChunks = new()
     { 
         ['}'] = '{',
         [')'] = '(',
@@ -21,98 +21,84 @@ public class Day10
         ['>'] = '<',
     };
 
-    private static Dictionary<char, int> points = new()
-    {
-        ['}'] = 1197,
-        [')'] = 3,
-        [']'] = 57,
-        ['>'] = 25137,
-
-        ['{'] = 1197,
-        ['('] = 3,
-        ['['] = 57,
-        ['<'] = 25137,
-    };
-
-    private static Dictionary<char, int> points2 = new()
-    {
-        ['('] = 1,
-        ['['] = 2,
-        ['{'] = 3,
-        ['<'] = 4,
-    };
     [Test]
     public void Part1()
     {
-        var result = 0;
+        Dictionary<char, int> points = new() { ['}'] = 1197, [')'] = 3, [']'] = 57, ['>'] = 25137, };
+
+        var syntaxErrorScore = 0;
 
         foreach (var line in lines)
         {
-            var stack = new Stack<char>();
+            var openingChunks = new Stack<char>();
 
-            foreach (var c in line)
+            foreach (var chunk in line)
             {
-                if (c is '(' or '{' or '[' or '<') stack.Push(c);
-                else
+                if (chunk is '(' or '{' or '[' or '<')
                 {
-                    var o = stack.Pop();
-                    if (match[c] != o)
-                    {
-                        result += points[c];
-                        break;
-                    }
+                    openingChunks.Push(chunk);
+                    continue;
+                }
+
+                var openingChunk = openingChunks.Pop();
+                
+                if (openingChunk != closingChunks[chunk])
+                {
+                    syntaxErrorScore += points[chunk];
+                    break;
                 }
             }
         }
 
-        Assert.That(result, Is.EqualTo(243939));
+        Assert.That(syntaxErrorScore, Is.EqualTo(243939));
     }
 
     [Test]
     public void Part2()
     {
+        Dictionary<char, int> points = new() { ['('] = 1, ['['] = 2, ['{'] = 3, ['<'] = 4 };
+
         var scores = new List<long>();
 
         foreach (var line in lines)
         {
-            var incomplete = true;
-            var stack = new Stack<char>();
+            var incompleteLine = true;
+            var openingChunks = new Stack<char>();
 
-            foreach (var c in line)
+            foreach (var chunk in line)
             {
-                if (c is '(' or '{' or '[' or '<') stack.Push(c);
-                else
+                if (chunk is '(' or '{' or '[' or '<')
                 {
-                    var o = stack.Pop();
-                    if (match[c] != o)
-                    {
-                        incomplete = false;
-                        break;
-                    }
+                    openingChunks.Push(chunk);
+                    continue;
+                }
+
+                var openingChunk = openingChunks.Pop();
+
+                if (closingChunks[chunk] != openingChunk)
+                {
+                    incompleteLine = false;
+                    break;
                 }
             }
 
-            if (incomplete)
+            if (incompleteLine)
             {
                 long score = 0;
-                while(stack.Count > 0)
+
+                while(openingChunks.Count > 0)
                 {
-                    var c = stack.Pop();
-                    score = (score * 5) + points2[c];
+                    score = (score * 5) + points[openingChunks.Pop()];
                 }
+
                 scores.Add(score);
             }
         }
               
         scores.Sort();
 
-        foreach (var score in scores)
-        {
-            Console.WriteLine(score);
-        }
+        var middleScore = scores[scores.Count / 2];
 
-        var middle = scores[scores.Count / 2];
-
-        Assert.That(middle, Is.EqualTo(2421222841));
+        Assert.That(middleScore, Is.EqualTo(2421222841));
     }
 }

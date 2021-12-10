@@ -18,7 +18,7 @@ public class Day1
     {
         var result = 0;
 
-        for (int i = 1; i < depths.Count; i++)
+        for (var i = 1; i < depths.Count; i++)
         {
             if (depths[i] > depths[i - 1]) result++;
         }
