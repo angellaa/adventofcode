@@ -1,7 +1,6 @@
-﻿using System.Numerics;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
-namespace AdventOfCode2022
+namespace AdventOfCode2021
 {
     [TestFixture]
     public class Day10
