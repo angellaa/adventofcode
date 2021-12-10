@@ -5,12 +5,12 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day6
 {
-    List<int> input;
+    private List<int> ages;
 
     [SetUp]
     public void SetUp()
     {
-        input = File.ReadAllText("Day6.txt").Split(",").Select(x => int.Parse(x)).ToList();
+        ages = File.ReadAllText("Day6.txt").Split(",").Select(int.Parse).ToList();
     }
 
     [Test]
@@ -18,60 +18,46 @@ public class Day6
     {
         for (var i = 0; i < 80; i++)
         {
-            int add = 0;
+            var newFishes = 0;
 
-            for (var j = 0; j < input.Count; j++)
+            for (var j = 0; j < ages.Count; j++)
             {
-                if (input[j] > 0) input[j]--;
+                if (ages[j] > 0) ages[j]--;
                 else
                 {
-                    input[j] = 6;
-                    add++;
+                    ages[j] = 6;
+                    newFishes++;
                 }
             }
 
-            input.AddRange(Enumerable.Range(0, add).Select(x => 8));
+            ages.AddRange(Enumerable.Repeat(8, newFishes));
         }
 
-        Assert.That(input.Count, Is.EqualTo(366057));
+        Assert.That(ages.Count, Is.EqualTo(366057));
     }
 
     [Test]
     public void Part2()
     {
-        var age = new long[10];
+        const int n = 10;
+        var fishCountByAge = new long[n];
 
-        foreach (var i in input)
+        foreach (var age in ages)
         {
-            age[i]++;
+            fishCountByAge[age]++;
         }
 
-        //Print(0, age);
-
-        var index = 0;
+        var zeroAgeIndex = 0;
 
         for (var i = 0; i < 256; i++)
         {
-            age[(index + 9) % 10] += age[index];
-            age[(index + 7) % 10] += age[index];
-            age[index] = 0;
+            fishCountByAge[(zeroAgeIndex + 9) % n] += fishCountByAge[zeroAgeIndex];
+            fishCountByAge[(zeroAgeIndex + 7) % n] += fishCountByAge[zeroAgeIndex];
+            fishCountByAge[zeroAgeIndex] = 0;
 
-            index = (index + 1) % 10;
-
-            //Print(index, age);
+            zeroAgeIndex = (zeroAgeIndex + 1) % n;
         }
 
-        Assert.That(age.Sum(), Is.EqualTo(1653559299811));
-    }
-
-    private void Print(int index, long[] age)
-    {
-        for (var i = 0; i < age.Length; i++)
-        {
-            var currentAge = (int)age[(index + i) % 9];
-            Console.Write(string.Join(" ", Enumerable.Repeat(i, currentAge)));
-            if (currentAge > 0) Console.Write(" ");
-        }
-        Console.WriteLine();
+        Assert.That(fishCountByAge.Sum(), Is.EqualTo(1653559299811));
     }
 }
