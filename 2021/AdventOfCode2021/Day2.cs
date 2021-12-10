@@ -5,7 +5,7 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day2
 {
-    List<(string Name, int Value)> commands;
+    private List<(string Name, int Value)> commands;
 
     [SetUp]
     public void SetUp()

@@ -10,7 +10,7 @@ public class Day1
     [SetUp]
     public void SetUp()
     {
-        depths = File.ReadAllLines("Day1.txt").Select(x => int.Parse(x)).ToList();
+        depths = File.ReadAllLines("Day1.txt").Select(int.Parse).ToList();
     }
 
     [Test]
@@ -31,7 +31,7 @@ public class Day1
     {
         var result = 0;
 
-        for (int i = 3; i < depths.Count; i++)
+        for (var i = 3; i < depths.Count; i++)
         {
             if (depths[i] + depths[i - 1] + depths[i - 2] > depths[i - 1] + depths[i - 2] + depths[i - 3])
             {

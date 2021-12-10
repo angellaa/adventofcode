@@ -5,39 +5,41 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day7
 {
-    List<int> input;
+    private List<int> positions;
 
     [SetUp]
     public void SetUp()
     {
-        input = File.ReadAllText("Day7.txt").Split(",").Select(x => int.Parse(x)).ToList();
+        positions = File.ReadAllText("Day7.txt").Split(",").Select(int.Parse).ToList();
     }
 
     [Test]
     public void Part1()
     {
-        var max = input.Max();
-        var min = int.MaxValue;
+        var minFuelCost = int.MaxValue;
 
-        for (int i = 0; i < max; i++)
+        for (var i = 0; i <= positions.Max(); i++)
         {
-            min = Math.Min(input.Sum(x => Math.Abs(i - x)), min);
+            var alignmentCost = positions.Sum(x => Math.Abs(i - x));
+
+            minFuelCost = Math.Min(alignmentCost, minFuelCost);
         }
 
-        Assert.That(min, Is.EqualTo(352997));
+        Assert.That(minFuelCost, Is.EqualTo(352997));
     }
 
     [Test]
     public void Part2()
     {
-        var max = input.Max();
-        var min = int.MaxValue;
+        var minFuelCost = int.MaxValue;
 
-        for (int i = 0; i < max; i++)
+        for (var i = 0; i <= positions.Max(); i++)
         {
-            min = Math.Min(input.Sum(x => Math.Abs(i - x) * (Math.Abs(i - x) + 1) / 2), min);
+            var alignmentCost = positions.Sum(x => Math.Abs(i - x) * (Math.Abs(i - x) + 1) / 2);
+
+            minFuelCost = Math.Min(alignmentCost, minFuelCost);
         }
 
-        Assert.That(min, Is.EqualTo(101571302));            
+        Assert.That(minFuelCost, Is.EqualTo(101571302));            
     }
 }

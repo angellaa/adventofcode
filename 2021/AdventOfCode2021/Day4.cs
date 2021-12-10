@@ -6,7 +6,7 @@ namespace AdventOfCode2021;
 public class Day4
 {
     private List<int> numbers;
-    readonly List<List<List<int>>> boards = new();
+    private readonly List<List<List<int>>> boards = new();
 
     [SetUp]
     public void SetUp()

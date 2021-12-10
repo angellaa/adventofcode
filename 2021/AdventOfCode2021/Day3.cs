@@ -5,8 +5,8 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day3
 {
-    List<string> binaryNumbers;
-    int numberOfBits;
+    private List<string> binaryNumbers;
+    private int numberOfBits;
 
     [SetUp]
     public void SetUp()
