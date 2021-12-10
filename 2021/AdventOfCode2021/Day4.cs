@@ -5,8 +5,8 @@ namespace AdventOfCode2021;
 [TestFixture]
 public class Day4
 {
-    List<int> numbers;
-    List<List<List<int>>> boards = new();
+    private List<int> numbers;
+    readonly List<List<List<int>>> boards = new();
 
     [SetUp]
     public void SetUp()
@@ -14,15 +14,15 @@ public class Day4
         var input = File.ReadAllLines("Day4.txt").ToList();
         var numberOfBoards = (input.Count - 1) / 6;
 
-        numbers = input[0].Split(",").Select(x => int.Parse(x)).ToList();
+        numbers = input[0].Split(",").Select(int.Parse).ToList();
 
-        for (int i = 0; i < numberOfBoards; i++)
+        for (var i = 0; i < numberOfBoards; i++)
         {
             var board = new List<List<int>>();
 
-            for (int row = 0; row < 5; row++)
+            for (var row = 0; row < 5; row++)
             {
-                board.Add(input[2 + 6 * i + row].Split().Where(x => x.Trim() != "").Select(x => int.Parse(x)).ToList());
+                board.Add(input[2 + 6 * i + row].Split().Where(x => x.Trim() != "").Select(int.Parse).ToList());
             }
 
             boards.Add(board);
@@ -58,7 +58,8 @@ public class Day4
             {
                 for (var i = 0; i < 5; i++)
                     if (board[i].Sum() == -5 || board.Select(x => x[i]).Sum() == -5)
-                        return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;                }
+                        return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
+            }
         }
 
         return 0;
