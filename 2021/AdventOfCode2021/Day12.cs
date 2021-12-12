@@ -14,6 +14,7 @@ public class Day12
         input.AddRange(input.Select(x => (x.To, x.From)).ToList());
     }
 
+    // TODO: Refactor into two tests
     [Test]
     public void Part1()
     {
@@ -24,13 +25,30 @@ public class Day12
 
         Explore(p);
 
-        Assert.That(result, Is.EqualTo(4749));
+        Assert.That(result, Is.EqualTo(123054)); // Part 2 answer is 123054
 
         List<string> GetNext(string from)
         {
             return input
                 .Where(node => node.From == from)
                 .Select(node => node.To)
+
+                // Part 1
+                //.Where(next =>
+                //{
+                //    if (next == "start")
+                //    {
+                //        return false;
+                //    }
+
+                //    if (next.ToLower() == next)
+                //    {
+                //        return visited.Count(y => y == next) < 1;
+                //    }
+
+                //    return true;
+                //})
+
                 .Where(next =>
                 {
                     if (next == "start")
@@ -40,7 +58,14 @@ public class Day12
 
                     if (next.ToLower() == next)
                     {
-                        return visited.Count(y => y == next) < 1;
+                        var lowers = visited.Where(x => x.ToLower() == x);
+
+                        if (lowers.Count() > lowers.Distinct().Count())
+                        {
+                            return lowers.Count(y => y == next) < 1;
+                        }
+
+                        return lowers.Count(y => y == next) < 2;
                     }
 
                     return true;
