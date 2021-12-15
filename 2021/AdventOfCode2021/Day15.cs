@@ -61,8 +61,10 @@ public class Day15
 
     int AStar(int start, int goal)
     {
+        var hashSet = new HashSet<int>();
         var openSet = new PriorityQueue<int, int>();
         openSet.Enqueue(start, 0);
+        hashSet.Add(start);
 
         var gScore = new Dictionary<int, int>
         {
@@ -81,7 +83,9 @@ public class Day15
                 return priority;
             }
 
-            var neighbors = GetNeighbors(current).ToList();
+            hashSet.Remove(current);
+
+            var neighbors = GetNeighbors(current);
 
             foreach (var neighbor in neighbors)
             {
@@ -92,9 +96,10 @@ public class Day15
                     gScore[neighbor] = tentative_gScore;
                     fScore[neighbor] = tentative_gScore + h(neighbor);
 
-                    if (!openSet.UnorderedItems.Select(x => x.Element).Contains(neighbor))
+                    if (!hashSet.Contains(neighbor))
                     {
                         openSet.Enqueue(neighbor, f(neighbor));
+                        hashSet.Add(neighbor);
                     }
                 }
             }
