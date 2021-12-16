@@ -33,39 +33,33 @@ public class Day4
     public void Part1()
     {
         Assert.That(Bingo(), Is.EqualTo(50008));
+
+        int Bingo()
+        {
+            foreach (var number in numbers)
+            {
+                foreach (var board in boards)
+                {
+                    for (var i = 0; i < 5; i++)
+                    for (var j = 0; j < 5; j++)
+                        if (board[i][j] == number)
+                            board[i][j] = -1;
+                }
+
+                foreach (var board in boards)
+                {
+                    for (var i = 0; i < 5; i++)
+                        if (board[i].Sum() == -5 || board.Select(x => x[i]).Sum() == -5)
+                            return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
+                }
+            }
+
+            return 0;
+        }
     }
-
-
+    
     [Test]
     public void Part2()
-    {
-        Assert.That(Bingo2(), Is.EqualTo(17408));
-    }
-
-    private int Bingo()
-    {
-        foreach (var number in numbers)
-        {
-            foreach (var board in boards)
-            {
-                for (var i = 0; i < 5; i++)
-                for (var j = 0; j < 5; j++)
-                    if (board[i][j] == number)
-                        board[i][j] = -1;
-            }
-
-            foreach (var board in boards)
-            {
-                for (var i = 0; i < 5; i++)
-                    if (board[i].Sum() == -5 || board.Select(x => x[i]).Sum() == -5)
-                        return board.SelectMany(x => x).Where(x => x != -1).Sum() * number;
-            }
-        }
-
-        return 0;
-    }
-
-    private int Bingo2()
     {
         var finalScore = 0;
 
@@ -97,6 +91,6 @@ public class Day4
             }
         }
 
-        return finalScore;
+        Assert.That(finalScore, Is.EqualTo(17408));
     }
 }
