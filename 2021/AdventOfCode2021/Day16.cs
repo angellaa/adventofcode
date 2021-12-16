@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
@@ -15,19 +16,39 @@ public class Day16
     {
         bits = string.Join("", File.ReadAllText("Day16.txt")
                                     .Select(x => Convert.ToString(Convert.ToInt32(x.ToString(), 16), 2).PadLeft(4, '0')));
+
+        Console.WriteLine(bits);
     }
 
     [Test]
     public void Part1()
     {
-        var packets = Parse(bits).Packets;
+        var packets = Parse(bits, -1).Packets;
+
+        Print(packets);
         
         Assert.That(Sum(packets), Is.EqualTo(0));
     }
 
-    public int Sum(List<Packet> packets)
+    public void Print(List<Packet> packets, int depth = 0)
     {
-        var sum = 0;
+        foreach (var packet in packets)
+        {
+            if (packet is LiteralPacket literal)
+            {
+                Console.WriteLine(new string(' ', 2 * depth) + "Literal Version " + literal.Version + " = " + literal.Value);
+            }
+            else if (packet is OperatorPacket op)
+            {
+                Console.WriteLine(new string(' ', 2 * depth) + "Operator Version " + op.Version);
+                Print(op.SubPackets, depth + 1);
+            }
+        }
+    }
+    
+    public long Sum(List<Packet> packets)
+    {
+        var sum = 0L;
 
         foreach (var packet in packets)
         {
@@ -42,12 +63,15 @@ public class Day16
         return sum;
     }
 
-    public static (List<Packet> Packets, string Unprocessed) Parse(string bits, int packets = -1)
+    public static (List<Packet> Packets, string Unprocessed) Parse(string bits, int packets)
     {
         if (bits.Replace("0", "") == "" || packets == 0)
         {
             return (new List<Packet>(), bits);
         }
+
+        Console.WriteLine("Analyze:");
+        Console.WriteLine(bits);
 
         var result = new List<Packet>();
 
@@ -72,14 +96,18 @@ public class Day16
             {
                 Version = version,
                 TypeId = typeId,
-                Value = Convert.ToInt32(literal, 2)
+                Value = Convert.ToInt64(literal, 2)
             };
 
             result.Add(literalPacket);
 
             var rest = bits.Take(start..);
 
-            result.AddRange(Parse(rest, packets - 1).Packets);
+            var (nextTypes, unprocessed) = Parse(rest, packets - 1);
+
+            result.AddRange(nextTypes);
+
+            return (result, unprocessed);
         }
         else
         {
@@ -92,15 +120,18 @@ public class Day16
                 {
                     Version = version,
                     TypeId = typeId,
-                    SubPackets = Parse(bits.Take(22..(22 + lengthsInBits))).Packets
+                    SubPackets = Parse(bits.Take(22..(22 + lengthsInBits)), -1).Packets
                 };
 
                 result.Add(packet);
 
                 var rest = bits.Take((22 + lengthsInBits)..);
 
-                result.AddRange(Parse(rest, packets - 1).Packets);
+                var (subTypes, unprocessed) = Parse(rest, packets - 1);
 
+                result.AddRange(subTypes);
+
+                return (result, unprocessed);
             }
             else
             {
@@ -117,11 +148,13 @@ public class Day16
 
                 result.Add(packet);
 
-                result.AddRange(Parse(parsed.Unprocessed).Packets);
+                var (subTypes, unprocessed) = Parse(parsed.Unprocessed, packets - 1);
+
+                result.AddRange(subTypes);
+
+                return (result, unprocessed);
             }
         }
-
-        return (result, "");
     }
 
     public class Packet
@@ -137,7 +170,7 @@ public class Day16
 
     public class LiteralPacket : Packet
     {
-        public int Value { get; init; }
+        public long Value { get; init; }
     }
 
     [Test]
