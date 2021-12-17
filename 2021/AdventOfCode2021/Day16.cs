@@ -27,7 +27,7 @@ public class Day16
 
         Print(packets);
         
-        Assert.That(Sum(packets), Is.EqualTo(0));
+        Assert.That(Sum(packets), Is.EqualTo(971));
     }
 
     public void Print(List<Packet> packets, int depth = 0)
@@ -69,9 +69,6 @@ public class Day16
         {
             return (new List<Packet>(), bits);
         }
-
-        Console.WriteLine("Analyze:");
-        Console.WriteLine(bits);
 
         var result = new List<Packet>();
 
@@ -161,22 +158,35 @@ public class Day16
     {
         public int Version { get; init; }
         public int TypeId { get; init; }
+        public virtual long Value { get; init; }
     }
 
     public class OperatorPacket : Packet
     {
         public List<Packet> SubPackets { get; init; } = new();
+
+        public override long Value => TypeId switch
+                {
+                    0 => SubPackets.Sum(x => x.Value),
+                    1 => SubPackets.Aggregate(1L, (a, y) => a * y.Value),
+                    2 => SubPackets.Min(x => x.Value),
+                    3 => SubPackets.Max(x => x.Value),
+                    5 => SubPackets[0].Value > SubPackets[1].Value ? 1 : 0,
+                    6 => SubPackets[0].Value < SubPackets[1].Value ? 1 : 0,
+                    7 => SubPackets[0].Value == SubPackets[1].Value ? 1 : 0,
+                };
     }
 
     public class LiteralPacket : Packet
     {
-        public long Value { get; init; }
     }
 
     [Test]
     public void Part2()
     {
-        Assert.That(-1, Is.EqualTo(0));
+        var packets = Parse(bits, -1).Packets;
+        
+        Assert.That(packets[0].Value, Is.EqualTo(0));
     }
 }
 
