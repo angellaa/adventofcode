@@ -9,6 +9,9 @@ public class Day19
     {
         public static Point operator +(Point a, Point b) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         public static Point operator -(Point a, Point b) => new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+
+        public int DistanceTo(Point p) => Math.Abs(p.X - X) + Math.Abs(p.Y - Y) + Math.Abs(p.Z - Z);
+
         public override string ToString() => $"{X},{Y},{Z}";
     }
 
@@ -89,10 +92,19 @@ public class Day19
             Console.WriteLine(beacon);
         }
 
-        Assert.That(beacons.Count, Is.EqualTo(0));
+        int max = int.MinValue;
+
+        for (int i = 0; i < scannersAbsolutePositions.Count; i++)
+        for (int j = i + 1; j < scannersAbsolutePositions.Count; j++)
+        {
+            max = Math.Max(max, scannersAbsolutePositions[i].Position.DistanceTo(scannersAbsolutePositions[j].Position));
+        }
+
+        Assert.That(beacons.Count, Is.EqualTo(447));
+        Assert.That(max, Is.EqualTo(15672));
     }
 
-    [Test]
+[Test]
     public void Part2()
     {
         Assert.That(-1, Is.EqualTo(0));
