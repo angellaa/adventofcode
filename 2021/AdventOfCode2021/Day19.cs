@@ -45,9 +45,51 @@ public class Day19
     [Test]
     public void Part1()
     {
-        Overlaps(scanners[0], scanners[1]);
+        var beacons = new HashSet<Point>();
 
-        Assert.That(-1, Is.EqualTo(0));
+        foreach (var p in scanners[0])
+        {
+            beacons.Add(p);
+        }
+
+        var scannersAbsolutePositions = new Dictionary<int, (Point Position, List<Point> AbsoluteBeacons)>
+        {
+            [0] = (new(0, 0, 0), scanners[0])
+        };
+
+        while (scannersAbsolutePositions.Count < scanners.Count)
+        {
+            foreach (var scannerIndex in scannersAbsolutePositions.Keys.ToList())
+            {
+                for (var i = 0; i < scanners.Count; i++)
+                {
+                    if (!scannersAbsolutePositions.Keys.Contains(i))
+                    {
+                        var result = ConvertToRelativePoints(
+                            scannersAbsolutePositions[scannerIndex].AbsoluteBeacons.Select(x => x - scannersAbsolutePositions[scannerIndex].Position).ToList(), 
+                            scanners[i]);
+
+                        if (result.RelativeScannerPosition != null)
+                        {
+                            var newBeacons = result.RelativePoints.Select(x => x + scannersAbsolutePositions[scannerIndex].Position).ToList();
+                            scannersAbsolutePositions[i] = (result.RelativeScannerPosition + scannersAbsolutePositions[scannerIndex].Position, newBeacons);
+
+                            foreach (var p in newBeacons)
+                            {
+                                beacons.Add(p);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach (var beacon in beacons)
+        {
+            Console.WriteLine(beacon);
+        }
+
+        Assert.That(beacons.Count, Is.EqualTo(0));
     }
 
     [Test]
@@ -56,7 +98,7 @@ public class Day19
         Assert.That(-1, Is.EqualTo(0));
     }
 
-    private static List<Point> Overlaps(List<Point> scan1, List<Point> scan2)
+    private static (Point RelativeScannerPosition, List<Point> RelativePoints) ConvertToRelativePoints(List<Point> scan1, List<Point> scan2)
     {
         var diff1 = Diffs(scan1).ToList();
 
@@ -81,19 +123,20 @@ public class Day19
                     maps.Add((s1.P2, s2.P2));
                 }
 
+                Point scannerPosition = null;
                 foreach (var map in maps)
                 {
-                    var point = (map.From - map.To);
+                    scannerPosition = (map.From - map.To);
 
-                    Console.WriteLine(map.From + " => " + map.To + "\t\tEstimated " + point);
+                    Console.WriteLine(map.From + " => " + map.To + "\t\tEstimated " + scannerPosition);
                 }
+                Console.WriteLine();
 
-                break;
+                return (scannerPosition, variant.Select(x => x + scannerPosition).ToList());
             }
         }
 
-
-        return new();
+        return new(null, new());
     }
 
     private static void Print(List<Point> diff1)
@@ -145,23 +188,23 @@ public class Day19
         }
     }
 
-    private static IEnumerable<(Point P1, Point P2, Point Diff)> Diffs(List<Point> points)
+    private static IEnumerable<(Point P1, Point P2, Point Diff)> Diffs(List<Point> ps)
     {
-        for (var i = 0; i < points.Count; i++)
-            for (var j = i + 1; j < points.Count; j++)
+        for (var i = 0; i < ps.Count; i++)
+            for (var j = i + 1; j < ps.Count; j++)
             {
-                yield return (points[i], points[j], points[i] - points[j]);
+                yield return (ps[i], ps[j], ps[i] - ps[j]);
             }
     }
 
-    private static IEnumerable<(Point P1, Point P2, Point Diff)> AllDiffs(List<Point> points)
+    private static IEnumerable<(Point P1, Point P2, Point Diff)> AllDiffs(List<Point> ps)
     {
-        for (var i = 0; i < points.Count; i++)
-            for (var j = 0; j < points.Count; j++)
+        for (var i = 0; i < ps.Count; i++)
+            for (var j = 0; j < ps.Count; j++)
             {
                 if (i == j) continue;
 
-                yield return (points[i], points[j], points[i] - points[j]);
+                yield return (ps[i], ps[j], ps[i] - ps[j]);
             }
     }
 }
