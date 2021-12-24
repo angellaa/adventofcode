@@ -1,1 +1,1 @@
-﻿target area: x=155..182, y=-117..-67
+﻿Get your input at https://adventofcode.com/2021/day/17

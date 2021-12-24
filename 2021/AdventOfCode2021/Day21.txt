@@ -1,2 +1,1 @@
-﻿Player 1 starting position: 10
-Player 2 starting position: 6
+﻿Get your input at https://adventofcode.com/2021/day/21
