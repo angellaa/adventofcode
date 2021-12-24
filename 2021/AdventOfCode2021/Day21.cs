@@ -38,6 +38,15 @@ public class Day21
         Assert.That(rolls * Math.Min(score1, score2), Is.EqualTo(900099));
     }
 
+
+    [Test]
+    public void Part2()
+    {
+        var universes = new int[21, 21, 10, 10]; // score1, score2, position1, position2 - value is how many win universes
+
+        Assert.That(rolls * Math.Min(score1, score2), Is.EqualTo(900099));
+    }
+
     public int Roll()
     {
         return NextDice() + NextDice() + NextDice();
@@ -49,13 +58,5 @@ public class Day21
             if (die > 100) die = 1;
             return die;
         }
-    }
-
-
-
-    [Test]
-    public void Part2()
-    {
-        Assert.That(-1, Is.EqualTo(0));
     }
 }
