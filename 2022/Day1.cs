@@ -23,6 +23,8 @@ public class Day1
 
             totalCalories += int.Parse(line);
         }
+
+        totalCaloriesByElf.Add(totalCalories);
     }
 
     [Test]
@@ -30,4 +32,5 @@ public class Day1
 
     [Test]
     public void Part2() => Assert.That(totalCaloriesByElf.OrderDescending().Take(3).Sum(), Is.EqualTo(213159));
+
 }
