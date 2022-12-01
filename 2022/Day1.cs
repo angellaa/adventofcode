@@ -5,32 +5,24 @@ namespace AdventOfCode2022;
 [TestFixture]
 public class Day1
 {
-    private readonly List<int> totalCaloriesByElf = new();
+    private List<int> totalCaloriesByElf = new List<int> { 1 };
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        var totalCalories = 0;
+        var sequence = new[] { "1", "2", "", "3", "4", "", "5" };
 
-        foreach (var line in File.ReadAllLines("Day1.txt"))
+        foreach (var chunk in sequence.ChunkBy(x => x == ""))
         {
-            if (line == "")
-            {
-                totalCaloriesByElf.Add(totalCalories);
-                totalCalories = 0;
-                continue;
-            }
-
-            totalCalories += int.Parse(line);
+            Console.WriteLine(string.Join(',', chunk));
         }
-
-        totalCaloriesByElf.Add(totalCalories);
     }
 
     [Test]
     public void Part1() => Assert.That(totalCaloriesByElf.Max(), Is.EqualTo(75622));
 
     [Test]
-    public void Part2() => Assert.That(totalCaloriesByElf.OrderDescending().Take(3).Sum(), Is.EqualTo(213159));
+    public void Part2() => Assert.That(totalCaloriesByElf.OrderDescending().Take(3).Sum(),
+                               Is.EqualTo(213159));
 
 }
