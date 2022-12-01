@@ -5,54 +5,29 @@ namespace AdventOfCode2022;
 [TestFixture]
 public class Day1
 {
-    private List<string> lines;
+    private readonly List<int> totalCaloriesByElf = new();
 
-    [SetUp]
-    public void SetUp()
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        lines = File.ReadAllLines("Day1.txt").ToList();
-    }
+        var totalCalories = 0;
 
-    [Test]
-    public void Part1()
-    {
-        long max = long.MinValue;
-        long v = 0;
-        foreach (var line in lines)
+        foreach (var line in File.ReadAllLines("Day1.txt"))
         {
             if (line == "")
             {
-                if (v > max) max = v;
-                v = 0;
+                totalCaloriesByElf.Add(totalCalories);
+                totalCalories = 0;
                 continue;
             }
 
-            v += long.Parse(line);
+            totalCalories += int.Parse(line);
         }
-
-        if (v > max) max = v;
-
-        Assert.That(max, Is.EqualTo(75622));
     }
 
     [Test]
-    public void Part2()
-    {
-        var list = new List<long>();
-        long v = 0;
+    public void Part1() => Assert.That(totalCaloriesByElf.Max(), Is.EqualTo(75622));
 
-        foreach (var line in lines)
-        {
-            if (line == "")
-            {
-                list.Add(v);
-                v = 0;
-                continue;
-            }
-
-            v += long.Parse(line);
-        }
-
-        Assert.That(list.OrderByDescending(x => x).Take(3).Sum(), Is.EqualTo(213159));
-    }
+    [Test]
+    public void Part2() => Assert.That(totalCaloriesByElf.OrderDescending().Take(3).Sum(), Is.EqualTo(213159));
 }
