@@ -10,7 +10,7 @@ public static class LinqExtensions
         {
             if (predicate(item))
             {
-                yield return chunk;
+                yield return chunk.ToList();
                 chunk.Clear();
                 continue;
             }
