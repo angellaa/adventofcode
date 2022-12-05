@@ -1,7 +1,21 @@
-﻿namespace AdventOfCode2022;
+﻿using System.Text;
+
+namespace AdventOfCode2022;
 
 public static class LinqExtensions
 {
+    public static Stack<char> ToStack(this string s)
+    {
+        var result = new Stack<char>();
+
+        foreach (var a in s)
+        {
+            result.Push(a);
+        }
+
+        return result;
+    }
+
     public static IEnumerable<IEnumerable<T>> ChunkBy<T>(this IEnumerable<T> list, Func<T, bool> predicate)
     {
         var chunk = new List<T>();
