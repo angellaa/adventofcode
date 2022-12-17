@@ -1,20 +1,21 @@
-﻿var map = new List<(int X, int Y)>();
+﻿var map = new List<(int X, long Y)>();
+var rock1 = new List<(int X, long Y)> { (0, 0), (1, 0), (2, 0), (3, 0) };
+var rock2 = new List<(int X, long Y)> { (1, 0), (0, 1), (1, 1), (2, 1), (1, 2) };
+var rock3 = new List<(int X, long Y)> { (0, 0), (1, 0), (2, 0), (2, 1), (2, 2) };
+var rock4 = new List<(int X, long Y)> { (0, 0), (0, 1), (0, 2), (0, 3) };
+var rock5 = new List<(int X, long Y)> { (0, 0), (1, 0), (0, 1), (1, 1) };
 
-var rock1 = new List<(int X, int Y)> { (0, 0), (1, 0), (2, 0), (3, 0) };
-var rock2 = new List<(int X, int Y)> { (1, 0), (0, 1), (1, 1), (2, 1), (1, 2) };
-var rock3 = new List<(int X, int Y)> { (0, 0), (1, 0), (2, 0), (2, 1), (2, 2) };
-var rock4 = new List<(int X, int Y)> { (0, 0), (0, 1), (0, 2), (0, 3) };
-var rock5 = new List<(int X, int Y)> { (0, 0), (1, 0), (0, 1), (1, 1) };
-
-var rocks = new List<List<(int X, int Y)>> { rock1, rock2, rock3, rock4, rock5 };
+var rocks = new List<List<(int X, long Y)>> { rock1, rock2, rock3, rock4, rock5 };
 
 var jets = File.ReadAllText("Input.txt");
-var topY = 0;
+var topY = 0L;
+var bottomY = 0L;
 var rockIndex = -1;
 var jetIndex = -1;
-List<(int X, int Y)> rock;
+List<(int X, long Y)> rock;
 NextRock();
 long stoppedRocks = 0;
+var highest = new long[7];
 
 while(true)
 {
@@ -30,7 +31,7 @@ while(true)
         stoppedRocks++;
 
         //Console.Clear();
-        //for (int y = topY; y >= 0; y--)
+        //for (long y = topY; y >= 0; y--)
         //{
         //    var line = new string('.', 7).ToCharArray();
         //    foreach (var p in map.Where(p => p.Y == y))
@@ -48,8 +49,6 @@ Console.WriteLine(topY);
 
 void SetInitialPosition()
 {
-    topY = map.Any() ? map.MaxBy(p => p.Y).Y + 1 : 0;
-
     for (var i = 0; i < rock.Count; i++)
     {
         rock[i] = (rock[i].X + 2, rock[i].Y + topY + 3);
@@ -62,7 +61,21 @@ void NextRock()
     rock = rocks[rockIndex].ToList();
     SetInitialPosition();
 }
-void FixRock() => map.AddRange(rock);
+
+void FixRock()
+{
+    map.AddRange(rock);
+
+    foreach (var r in rock)
+    {
+        highest[r.X] = Math.Max(highest[r.X], r.Y);
+    }
+
+    topY = highest.Max() + 1;
+    bottomY = highest.Min();
+
+    map.RemoveAll(p => p.Y < bottomY);
+}
 
 bool MoveRockLeft() => MoveRock((-1, 0));
 bool MoveRockRight() => MoveRock((1, 0));
@@ -74,20 +87,18 @@ bool MoveRock((int X, int Y) dir)
 
     for (var i = 0; i < rock.Count; i++)
     {
-        newRock[i] = (newRock[i].X + dir.X, newRock[i].Y + dir.Y);
-    }
+        var p = (X: newRock[i].X + dir.X, Y: newRock[i].Y + dir.Y);
 
-    if (Overlap(newRock, map) || !WithinCave(newRock))
-    {
-        return false;
+        if (p.X is < 0 or >= 7 || p.Y < 0 || map.Contains(p))
+        {
+            return false;
+        }
+
+        newRock[i] = p;
     }
 
     rock = newRock;
     return true;
 }
-
-bool Overlap(List<(int X, int Y)> r1, List<(int X, int Y)> r2) => r1.Intersect(r2).Any();
-bool WithinCave(List<(int X, int Y)> r) => r.All(p => p.X is >= 0 and < 7 && p.Y >= 0);
-
 
 
