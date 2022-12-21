@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
+﻿using System.Numerics;
 
 var map = new List<(int X, long Y)>();
 var rock1 = new List<(int X, long Y)> { (0, 0), (1, 0), (2, 0), (3, 0) };
@@ -20,19 +18,14 @@ List<(int X, long Y)> rock;
 NextRock();
 long stoppedRocks = 0;
 var highest = new long[7];
-var diffs = new List<long>();
 var lastY = 0L;
-var cycleAdds = new List<long>();
 
-// part 2 example
-//var startFirstCycle = 77L;     
-//var cycleLength = 35L;
-//var highIncrease = 53L;
+var cycleLength = 35; // Use cycle 60050 for part 2 input data or 35 for part 2 example;
 
-// part 2 real
-var startFirstCycle = 171710L;
-var cycleLength = 60050L;
-var highIncrease = 90819L;
+var diffs = new long[cycleLength * 2];
+var diffIndex = 0;
+var firstHighIncrease = 0L;
+var secondHighIncrease = 0L;
 
 while (true)
 {
@@ -41,41 +34,67 @@ while (true)
 
     if (jet == '>') MoveRockRight();
     else if (jet == '<') MoveRockLeft();
-    else throw new Exception("fuck");
-
+    else throw new Exception("ops");
+    
     if (!MoveRockDown())
     {
         FixRock();
         NextRock();
         stoppedRocks++;
 
-        //Console.Clear();
-        //for (long y = topY; y >= 0; y--)
-        //{
-        //    var line = new string('.', 7).ToCharArray();
-        //    foreach (var p in map.Where(p => p.Y == y))
-        //        line[p.X] = '#';
-        //    Console.WriteLine(new string(line));
-        //}
-
-        //Console.ReadKey();
-
-        if (stoppedRocks == startFirstCycle + cycleLength) break;
-
-        if (stoppedRocks >= startFirstCycle)
+        if (stoppedRocks < cycleLength * 2)
         {
-            cycleAdds.Add(topY - lastY);
+            diffs[stoppedRocks] = topY - lastY;
+
+        }
+        else if (stoppedRocks == cycleLength * 2)
+        {
+            firstHighIncrease = diffs.Take(cycleLength).Sum();
+            secondHighIncrease = diffs.TakeLast(cycleLength).Sum();
+        }
+        else
+        {
+            firstHighIncrease -= diffs[diffIndex];
+            firstHighIncrease += diffs[(diffIndex + cycleLength) % (2 * cycleLength)];
+
+            secondHighIncrease -= diffs[(diffIndex + cycleLength) % (2 * cycleLength)];
+
+            diffs[diffIndex] = topY - lastY;
+            secondHighIncrease += diffs[diffIndex];
+
+            diffIndex = (diffIndex + 1) % (2 * cycleLength);
+
+            if (firstHighIncrease == secondHighIncrease)
+            {
+                var first = diffs.Skip(diffIndex).Take(cycleLength).ToList();
+                var second = diffs.Skip(diffIndex + cycleLength).Concat(diffs.Take(diffIndex)).ToList();
+
+                if (first.SequenceEqual(second))
+                {
+                    Console.WriteLine("Cycle found starting at " + stoppedRocks + " with high increase of " + firstHighIncrease);
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("False positive - no cycle found starting at " + stoppedRocks);
+                }
+            }
         }
 
         lastY = topY;
+
+        if (stoppedRocks > 1000000)
+        {
+            Console.WriteLine("no cycle found");
+            return;
+        }
     }
 }
 
 // Use the cycle information to calculate high
-BigInteger sum = cycleAdds.Sum();
 BigInteger result = topY +
-                    highIncrease * ((1000000000000 - stoppedRocks) / cycleLength) +
-                    cycleAdds.Skip(1).Take((int)((1000000000000 - stoppedRocks) % cycleLength)).Sum();
+                    firstHighIncrease * ((1000000000000 - stoppedRocks) / cycleLength) +
+                    diffs.Take((int)((1000000000000 - stoppedRocks) % cycleLength)).Sum();
 
 Console.WriteLine(result);
 
@@ -107,13 +126,6 @@ void FixRock()
     bottomY = highest.Min();
 
     map.RemoveAll(p => p.Y < bottomY);
-
-    // Code to find the cycle
-    //if (map.All(p => p.Y <= bottomY))
-    //{
-    //    Console.WriteLine("One layer after " + stoppedRocks + " rocks. High increase = " + (topY - lastY));
-    //    lastY = topY;
-    //}
 }
 
 bool MoveRockLeft() => MoveRock((-1, 0));
