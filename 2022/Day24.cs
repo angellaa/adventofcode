@@ -10,10 +10,9 @@ public class Day24
     private readonly Dictionary<int, HashSet<(int y, int s)>> spacesByMinute = new();
     private readonly HashSet<(int y, int x)> allSpaces = new();
     private readonly List<(int y, int x, char dir)> blizzards = new();
-    private readonly Dictionary<(int y, int x), int> visited = new();
     private int n;
     private int m;
-    private readonly int maxMinute = 313;
+    private const int maxMinute = 313;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -27,8 +26,6 @@ public class Day24
         {
             var dir = map[y][x];
             if (dir is '^' or 'v' or '>' or '<') blizzards.Add((y, x, dir));
-            
-            visited[(y, x)] = 0;
         }
 
         for (var y = 1; y < n - 1; y++)
@@ -58,37 +55,42 @@ public class Day24
             //Print();
         }
 
-        Assert.That(Count(0, 1, 0, 0, 0), Is.EqualTo(18));
+        Assert.That(Count(), Is.EqualTo(301));
     }
 
-    private int Count(int y, int x, int minute, int waits, int backSteps)
+    private int Count()
     {
-        if (visited[(y, x)] > 2) return int.MaxValue;
-        if (minute + (n - 1 - y) + (m - 2 - x) >= maxMinute) return int.MaxValue;
-        if (waits > 2) return int.MaxValue;
-        if (backSteps > 2) return int.MaxValue;
+        var root = (0, 1, 0);
+        var explored = new HashSet<(int y, int x, int minute)> { root };
 
-        visited[(y, x)]++;
+        var queue = new Queue<(int y, int x, int minute)>();
+        queue.Enqueue(root);
 
-        //if (y == n - 1 && x == m - 2)
-        //{
-        //    Debug.WriteLine("Solution found at minute " + minute);
-        //    return minute;
-        //}
+        while (queue.Count > 0)
+        {
+            var (y, x, minute) = queue.Dequeue();
 
-        var nextSpace = spacesByMinute[minute + 1];
+            if (y == n - 1 && x == m - 2) return minute;
 
-        var min = int.MaxValue;
+            (int y, int x, int minute) p;
+                
+            p = (y, x + 1, minute + 1);
+            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
 
-        if (nextSpace.Contains((y, x + 1))) min = Math.Min(min, Count(y, x + 1, minute + 1, 0, 0));
-        if (nextSpace.Contains((y + 1, x))) min = Math.Min(min, Count(y + 1, x, minute + 1, 0, 0));
-        if (nextSpace.Contains((y, x))) min = Math.Min(min, Count(y, x, minute + 1, waits + 1, 0));
-        if (nextSpace.Contains((y, x - 1))) min = Math.Min(min, Count(y, x - 1, minute + 1, 0, backSteps + 1));
-        if (nextSpace.Contains((y - 1, x))) min = Math.Min(min, Count(y - 1, x, minute + 1, 0, backSteps + 1));
+            p = (y, x - 1, minute + 1);
+            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
 
-        visited[(y, x)]--;
+            p = (y, x, minute + 1);
+            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
 
-        return min;
+            p = (y + 1, x, minute + 1);
+            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
+
+            p = (y - 1, x, minute + 1);
+            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
+        }
+
+        return int.MaxValue;
     }
 
     private void Move()
