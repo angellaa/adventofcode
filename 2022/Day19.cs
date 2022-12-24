@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 using static System.Text.RegularExpressions.Regex;
 
@@ -43,26 +42,16 @@ public class Day19
     [Test]
     public void Part1()
     {
-        var result = 0;
-
-        foreach (var blueprint in blueprints)
-        {
-            var g = OpenGeodes(blueprint);
-
-            Debug.WriteLine($"{blueprint.id}: geodes = " + g);
-
-            result += g * blueprint.id;
-        }
-
-        Assert.That(result, Is.EqualTo(1681));
+        Assert.That(blueprints.Sum(blueprint => OpenGeodes(blueprint) * blueprint.id), Is.EqualTo(1681));
     }
 
     [Test]
     public void Part2()
     {
+        Assert.That(blueprints.Take(3).Aggregate(1, (current, blueprint) => current * OpenGeodes(blueprint, 32)), Is.EqualTo(5394));
     }
 
-    private int OpenGeodes(Blueprint blueprint)
+    private static int OpenGeodes(Blueprint blueprint, int targetMinutes = 24)
     {
         var root = (0, 0, 0, 0, 1, 0, 0, 0, 0);
 
@@ -77,7 +66,7 @@ public class Day19
         {
             var (ore, clay, obsidian, geode, oreRobots, clayRobots, obsidianRobots, geodeRobots, minute) = stack.Pop();
 
-            if (minute == 24)
+            if (minute == targetMinutes)
             {
                 if (geode > max)
                 {
@@ -86,7 +75,7 @@ public class Day19
                 continue;
             }
 
-            if (geode + (24 - minute + 1) * (24 - minute + 1 + 1) / 2 < max)
+            if (geode + geodeRobots * (targetMinutes - minute) + (targetMinutes - minute) * (targetMinutes - minute + 1) / 2 < max)
             {
                 continue;
             }
