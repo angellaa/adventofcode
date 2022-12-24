@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace AdventOfCode2022;
 
@@ -11,9 +10,10 @@ public class Day24
     private readonly Dictionary<int, HashSet<(int y, int s)>> spacesByMinute = new();
     private readonly HashSet<(int y, int x)> allSpaces = new();
     private readonly List<(int y, int x, char dir)> blizzards = new();
+    private readonly Dictionary<(int y, int x), int> visited = new();
     private int n;
     private int m;
-    private readonly int maxMinute = 630;
+    private readonly int maxMinute = 313;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -27,6 +27,8 @@ public class Day24
         {
             var dir = map[y][x];
             if (dir is '^' or 'v' or '>' or '<') blizzards.Add((y, x, dir));
+            
+            visited[(y, x)] = 0;
         }
 
         for (var y = 1; y < n - 1; y++)
@@ -56,29 +58,37 @@ public class Day24
             //Print();
         }
 
-        Assert.That(Count(0, 1, 0), Is.EqualTo(18));
+        Assert.That(Count(0, 1, 0, 0, 0), Is.EqualTo(18));
     }
 
-    private int Count(int y, int x, int minute)
+    private int Count(int y, int x, int minute, int waits, int backSteps)
     {
-        if (minute >= maxMinute) return int.MaxValue;
-        if (y == n - 1 && x == m - 2)
-        {
-            Debug.WriteLine("Solution found at minute " + minute);
-            return minute;
-        }
+        if (visited[(y, x)] > 2) return int.MaxValue;
+        if (minute + (n - 1 - y) + (m - 2 - x) >= maxMinute) return int.MaxValue;
+        if (waits > 2) return int.MaxValue;
+        if (backSteps > 2) return int.MaxValue;
+
+        visited[(y, x)]++;
+
+        //if (y == n - 1 && x == m - 2)
+        //{
+        //    Debug.WriteLine("Solution found at minute " + minute);
+        //    return minute;
+        //}
 
         var nextSpace = spacesByMinute[minute + 1];
 
-        var counts = new List<int>();
+        var min = int.MaxValue;
 
-        if (nextSpace.Contains((y, x + 1))) counts.Add(Count(y, x + 1, minute + 1));
-        if (nextSpace.Contains((y + 1, x))) counts.Add(Count(y + 1, x, minute + 1));
-        if (nextSpace.Contains((y, x))) counts.Add(Count(y, x, minute + 1));
-        if (nextSpace.Contains((y, x - 1))) counts.Add(Count(y, x - 1, minute + 1));
-        if (nextSpace.Contains((y - 1, x))) counts.Add(Count(y - 1, x, minute + 1));
+        if (nextSpace.Contains((y, x + 1))) min = Math.Min(min, Count(y, x + 1, minute + 1, 0, 0));
+        if (nextSpace.Contains((y + 1, x))) min = Math.Min(min, Count(y + 1, x, minute + 1, 0, 0));
+        if (nextSpace.Contains((y, x))) min = Math.Min(min, Count(y, x, minute + 1, waits + 1, 0));
+        if (nextSpace.Contains((y, x - 1))) min = Math.Min(min, Count(y, x - 1, minute + 1, 0, backSteps + 1));
+        if (nextSpace.Contains((y - 1, x))) min = Math.Min(min, Count(y - 1, x, minute + 1, 0, backSteps + 1));
 
-        return counts.Any() ? counts.Min() : int.MaxValue;
+        visited[(y, x)]--;
+
+        return min;
     }
 
     private void Move()
@@ -114,21 +124,21 @@ public class Day24
             blizzards[i] = b;
         }
 
-        //map = new List<char[]>();
+        map = new List<char[]>();
 
-        //map.Add(("#." + new string('#', m - 2)).ToArray());
+        map.Add(("#." + new string('#', m - 2)).ToArray());
 
-        //for (var y = 0; y < n - 2; y++)
-        //{
-        //    map.Add(("#" + new string('.', m - 2) + "#").ToArray());
-        //}
+        for (var y = 0; y < n - 2; y++)
+        {
+            map.Add(("#" + new string('.', m - 2) + "#").ToArray());
+        }
 
-        //map.Add(("#" + new string('#', m - 3) + ".#").ToArray());
+        map.Add(("#" + new string('#', m - 3) + ".#").ToArray());
 
-        //foreach (var b in blizzards)
-        //{
-        //    map[b.y][b.x] = b.dir;
-        //}
+        foreach (var b in blizzards)
+        {
+            map[b.y][b.x] = b.dir;
+        }
     }
 
     private void Print()
