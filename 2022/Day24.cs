@@ -5,19 +5,16 @@ namespace AdventOfCode2022;
 [TestFixture]
 public class Day24
 {
-    private List<char[]> map = new();
-    private HashSet<(int y, int x)> spaces = new();
     private readonly Dictionary<int, HashSet<(int y, int s)>> spacesByMinute = new();
-    private readonly HashSet<(int y, int x)> allSpaces = new();
     private readonly List<(int y, int x, char dir)> blizzards = new();
     private int n;
     private int m;
-    private const int maxMinute = 313;
+    private const int maxMinutes = 900;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        map = File.ReadAllLines("Input.txt").Select(x => x.ToArray()).ToList();
+        var map = File.ReadAllLines("Input.txt").Select(x => x.ToArray()).ToList();
         n = map.Count;
         m = map[0].Length;
 
@@ -28,6 +25,8 @@ public class Day24
             if (dir is '^' or 'v' or '>' or '<') blizzards.Add((y, x, dir));
         }
 
+        HashSet<(int y, int x)> allSpaces = new();
+
         for (var y = 1; y < n - 1; y++)
         for (var x = 1; x < m - 1; x++)
         {
@@ -36,31 +35,34 @@ public class Day24
 
         allSpaces.Add((0, 1));
         allSpaces.Add((n - 1, m - 2));
-        spaces = allSpaces.Except(blizzards.Select(b => (b.y, b.x))).ToHashSet();
 
-        spacesByMinute[0] = spaces;
+        spacesByMinute[0] = allSpaces.Except(blizzards.Select(b => (b.y, b.x))).ToHashSet();
+
+        for (var minute = 1; minute <= maxMinutes; minute++)
+        {
+            Move();
+            spacesByMinute[minute] = allSpaces.Except(blizzards.Select(b => (b.y, b.x))).ToHashSet();
+        }
     }
 
     [Test]
     public void Part1()
     {
-        //Print();
-
-        for (var minute = 1; minute <= maxMinute; minute++)
-        {
-            Move();
-            spacesByMinute[minute] = allSpaces.Except(blizzards.Select(b => (b.y, b.x))).ToHashSet();
-
-            //Console.WriteLine("Minute " + minute);
-            //Print();
-        }
-
-        Assert.That(Count(), Is.EqualTo(301));
+        Assert.That(Count((0, 1, 0), (n - 1, m - 2)), Is.EqualTo(301));
     }
 
-    private int Count()
+    [Test]
+    public void Part2()
     {
-        var root = (0, 1, 0);
+        var minutes1 = Count((0, 1, 0), (n - 1, m - 2));
+        var minutes2 = Count((n - 1, m - 2, minutes1), (0, 1));
+        var result = Count((0, 1, minutes2), (n - 1, m - 2));
+
+        Assert.That(result, Is.EqualTo(859));
+    }
+
+    private int Count((int y, int x, int minute) root, (int y, int x) target)
+    {
         var explored = new HashSet<(int y, int x, int minute)> { root };
 
         var queue = new Queue<(int y, int x, int minute)>();
@@ -70,24 +72,25 @@ public class Day24
         {
             var (y, x, minute) = queue.Dequeue();
 
-            if (y == n - 1 && x == m - 2) return minute;
+            if ((y, x) == target) return minute;
 
-            (int y, int x, int minute) p;
-                
-            p = (y, x + 1, minute + 1);
-            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
+            var nextMoves = new (int y, int x, int minute)[]
+            {
+                (y, x + 1, minute + 1),
+                (y, x - 1, minute + 1),
+                (y, x, minute + 1),
+                (y + 1, x, minute + 1),
+                (y - 1, x, minute + 1)
+            };
 
-            p = (y, x - 1, minute + 1);
-            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
-
-            p = (y, x, minute + 1);
-            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
-
-            p = (y + 1, x, minute + 1);
-            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
-
-            p = (y - 1, x, minute + 1);
-            if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p)) { explored.Add(p); queue.Enqueue(p); }
+            foreach (var p in nextMoves)
+            {
+                if (spacesByMinute[p.minute].Contains((p.y, p.x)) && !explored.Contains(p))
+                {
+                    explored.Add(p); 
+                    queue.Enqueue(p);
+                }
+            }
         }
 
         return int.MaxValue;
@@ -99,62 +102,12 @@ public class Day24
         {
             var b = blizzards[i];
 
-            if (b.dir == '<')
-            {
-                var newX = (m - 2 + (b.x - 1) - 1) % (m - 2) + 1;
-                b = (b.y, newX, b.dir);
-            }
-
-            if (b.dir == '>')
-            {
-                var newX = ((b.x - 1) + 1) % (m - 2) + 1;
-                b = (b.y, newX, b.dir);
-            }
-
-            if (b.dir == '^')
-            {
-                var newY = (n - 2 + (b.y - 1) - 1) % (n - 2) + 1;
-                b = (newY, b.x, b.dir);
-            }
-
-            if (b.dir == 'v')
-            {
-                var newY = ((b.y - 1) + 1) % (n - 2) + 1;
-                b = (newY, b.x, b.dir);
-            }
+            if (b.dir == '<') { var newX = (m - 2 + (b.x - 1) - 1) % (m - 2) + 1; b = (b.y, newX, b.dir); }
+            if (b.dir == '>') { var newX = (b.x - 1 + 1) % (m - 2) + 1; b = (b.y, newX, b.dir); }
+            if (b.dir == '^') { var newY = (n - 2 + (b.y - 1) - 1) % (n - 2) + 1; b = (newY, b.x, b.dir); }
+            if (b.dir == 'v') { var newY = (b.y - 1 + 1) % (n - 2) + 1; b = (newY, b.x, b.dir); }
 
             blizzards[i] = b;
         }
-
-        map = new List<char[]>();
-
-        map.Add(("#." + new string('#', m - 2)).ToArray());
-
-        for (var y = 0; y < n - 2; y++)
-        {
-            map.Add(("#" + new string('.', m - 2) + "#").ToArray());
-        }
-
-        map.Add(("#" + new string('#', m - 3) + ".#").ToArray());
-
-        foreach (var b in blizzards)
-        {
-            map[b.y][b.x] = b.dir;
-        }
-    }
-
-    private void Print()
-    {
-        foreach (var c in map)
-        {
-            Console.WriteLine(new string(c));
-        }
-
-        Console.WriteLine();
-    }
-
-    [Test]
-    public void Part2()
-    {
     }
 }
