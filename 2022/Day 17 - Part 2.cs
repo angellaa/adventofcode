@@ -11,26 +11,24 @@ var rocks = new List<List<(int X, long Y)>> { rock1, rock2, rock3, rock4, rock5 
 
 var jets = File.ReadAllText("Input.txt");
 var topY = 0L;
-var bottomY = 0L;
 var rockIndex = -1;
 var jetIndex = -1;
 List<(int X, long Y)> rock;
 NextRock();
-long stoppedRocks = 0;
+int stoppedRocks = 0;
 var highest = new long[7];
+var patterns = new List<(HashSet<(int X, long Y)> Set, int RockIndex, char Jet)>();
+var patternSize = 20;
+int cycleSize;
+var diffs = new List<long>();
 var lastY = 0L;
 
-var cycleLength = 35; // Use cycle 60050 for part 2 input data or 35 for part 2 example;
-
-var diffs = new long[cycleLength * 2];
-var diffIndex = 0;
-var firstHighIncrease = 0L;
-var secondHighIncrease = 0L;
+char jet;
 
 while (true)
 {
     jetIndex = (jetIndex + 1) % jets.Length;
-    var jet = jets[jetIndex];
+    jet = jets[jetIndex];
 
     if (jet == '>') MoveRockRight();
     else if (jet == '<') MoveRockLeft();
@@ -40,61 +38,39 @@ while (true)
     {
         FixRock();
         NextRock();
-        stoppedRocks++;
 
-        if (stoppedRocks < cycleLength * 2)
+        diffs.Add(topY - lastY);
+        lastY = topY;
+
+        if (topY > patternSize)
         {
-            diffs[stoppedRocks] = topY - lastY;
-
-        }
-        else if (stoppedRocks == cycleLength * 2)
-        {
-            firstHighIncrease = diffs.Take(cycleLength).Sum();
-            secondHighIncrease = diffs.TakeLast(cycleLength).Sum();
-        }
-        else
-        {
-            firstHighIncrease -= diffs[diffIndex];
-            firstHighIncrease += diffs[(diffIndex + cycleLength) % (2 * cycleLength)];
-
-            secondHighIncrease -= diffs[(diffIndex + cycleLength) % (2 * cycleLength)];
-
-            diffs[diffIndex] = topY - lastY;
-            secondHighIncrease += diffs[diffIndex];
-
-            diffIndex = (diffIndex + 1) % (2 * cycleLength);
-
-            if (firstHighIncrease == secondHighIncrease)
+            for (var i = 1; i < diffs.Count; i++)
             {
-                var first = diffs.Skip(diffIndex).Take(cycleLength).ToList();
-                var second = diffs.Skip(diffIndex + cycleLength).Concat(diffs.Take(diffIndex)).ToList();
-
-                if (first.SequenceEqual(second))
+                if (stoppedRocks >= 0 && stoppedRocks - i >= 0 &&
+                    patterns[stoppedRocks].Set.SetEquals(patterns[stoppedRocks - i].Set) &&
+                    patterns[stoppedRocks].RockIndex == patterns[stoppedRocks - i].RockIndex &&
+                    patterns[stoppedRocks].Jet == patterns[stoppedRocks - i].Jet)
                 {
-                    Console.WriteLine("Cycle found starting at " + stoppedRocks + " with high increase of " + firstHighIncrease);
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("False positive - no cycle found starting at " + stoppedRocks);
+                    Console.WriteLine("Found repeated pattern at rock index " + stoppedRocks + " topY=" + topY + " i=" + i);
+                    cycleSize = i;
+                    stoppedRocks++;
+                    goto result;
                 }
             }
         }
 
-        lastY = topY;
-
-        if (stoppedRocks > 1000000)
-        {
-            Console.WriteLine("no cycle found");
-            return;
-        }
+        stoppedRocks++;
     }
 }
 
+result:
+
 // Use the cycle information to calculate high
+var cycleSum = diffs.TakeLast(cycleSize).Sum();
+
 BigInteger result = topY +
-                    firstHighIncrease * ((1000000000000 - stoppedRocks) / cycleLength) +
-                    diffs.Take((int)((1000000000000 - stoppedRocks) % cycleLength)).Sum();
+                    cycleSum * ((1000000000000L - stoppedRocks) / cycleSize) +
+                    diffs.TakeLast(cycleSize).Take((int)((1000000000000L - stoppedRocks) % cycleSize)).Sum();
 
 Console.WriteLine(result);
 
@@ -123,9 +99,10 @@ void FixRock()
     }
 
     topY = highest.Max() + 1;
-    bottomY = highest.Min();
+    
+    patterns.Add((map.Where(p => p.Y >= topY - patternSize).Select(p => (p.X, p.Y - topY)).ToHashSet(), rockIndex, jet));
 
-    map.RemoveAll(p => p.Y < bottomY);
+    map.RemoveAll(p => p.Y < topY - 2 * patternSize);
 }
 
 bool MoveRockLeft() => MoveRock((-1, 0));
