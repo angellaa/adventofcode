@@ -6,9 +6,6 @@ public class Day16
 {
     private List<Valve> valves;
 
-    [Flags]
-    enum Opens { };
-
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
@@ -48,18 +45,7 @@ public class Day16
 
         foreach (var path in paths)
         {
-            var totalFlow = 0;
-            var flow = 0;
-            var time = 0;
-
-            foreach (var (v, d) in path)
-            {
-                totalFlow += flow * (d - time);
-                flow += v.FlowRate;
-                time = d;
-            }
-
-            totalFlow += flow * (30 - path.Last().Item2);
+            var totalFlow = CalculateFlow(path, 30);
 
             maxFlow = Math.Max(maxFlow, totalFlow);
         }
@@ -70,9 +56,45 @@ public class Day16
     [Test]
     public void Part2()
     {
+        var maxFlow = 0;
+
+        var paths = GetPaths().Distinct().Select(x => (Path: x, Flow: CalculateFlow(x, 26))).OrderByDescending(x => x.Flow).Take(1500).ToList();
+
+        foreach (var p1 in paths)
+        foreach (var p2 in paths)
+        {
+            if (p1.Path == p2.Path) continue;
+
+            if (!p1.Path.Select(x => x.Valve.Id).Intersect(p2.Path.Select(y => y.Valve.Id)).Any())
+            {
+                var totalFlow = p1.Flow + p2.Flow;
+             
+                maxFlow = Math.Max(maxFlow, totalFlow);
+            }
+        }         
+
+        Assert.That(maxFlow, Is.EqualTo(1707));
     }
-    
-    private List<List<(Valve, int)>> GetPaths()
+
+    private static int CalculateFlow(List<(Valve, int Time)> path, int maxTime)
+    {
+        var totalFlow = 0;
+        var flow = 0;
+        var time = 0;
+
+        foreach (var (v, d) in path)
+        {
+            totalFlow += flow * (d - time);
+            flow += v.FlowRate;
+            time = d;
+        }
+
+        totalFlow += flow * (maxTime - path.Last().Time);
+
+        return totalFlow;
+    }
+
+    private List<List<(Valve Valve, int Time) >> GetPaths()
     {
         var visited = new HashSet<(int time, int totalFlow, Valve valve, string opens, int distance, List<(Valve, int)> path)>();
         var startValve = valves.Find(x => x.Name == "AA");
@@ -121,7 +143,7 @@ public class Day16
                 {
                     if (time + d <= 30)
                     {
-                        if (newPath.Count > 7)
+                        if (newPath.Count > 1)
                         {
                             result.Add(newPath);
                         }
