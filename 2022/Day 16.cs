@@ -40,175 +40,56 @@ public class Day16
         }
     }
 
-    //private static List<(Valve, int)> FindNextFlowValves(Valve startValve)
-    //{
-    //    var visited = new HashSet<Valve>();
-    //    var queue = new Queue<(Valve, int)>();
-
-    //    visited.Add(startValve);
-    //    queue.Enqueue((startValve, 0));
-
-    //    var result = new List<(Valve Valve, int Distance)>();
-
-    //    while (queue.Count > 0)
-    //    {
-    //        var (valve, distance) = queue.Dequeue();
-
-    //        foreach (var v in valve.NextValves)
-    //        {
-    //            if (v.FlowRate > 0)
-    //            {
-    //                result.Add((v, distance + 1));
-    //            }
-    //            else
-    //            {
-    //                var next = (v, distance + 1);
-
-    //                if (!visited.Contains(v))
-    //                {
-    //                    visited.Add(v);
-    //                    queue.Enqueue(next);
-    //                }
-    //            }
-    //        }
-    //    }
-
-    //    return result;
-    //}
-
     [Test]
     public void Part1()
     {
-        Assert.That(MaxFlow(), Is.EqualTo(1641));
+        var paths = GetPaths();
+        var maxFlow = 0;
+
+        foreach (var path in paths)
+        {
+            var totalFlow = 0;
+            var flow = 0;
+            var time = 0;
+
+            foreach (var (v, d) in path)
+            {
+                totalFlow += flow * (d - time);
+                flow += v.FlowRate;
+                time = d;
+            }
+
+            totalFlow += flow * (30 - path.Last().Item2);
+
+            maxFlow = Math.Max(maxFlow, totalFlow);
+        }
+
+        Assert.That(maxFlow, Is.EqualTo(1641));
     }
 
     [Test]
     public void Part2()
     {
-        Assert.That(MaxFlowWithElephant(), Is.EqualTo(1707));
     }
-
-    private int MaxFlowWithElephant()
+    
+    private List<List<(Valve, int)>> GetPaths()
     {
-        var visited = new HashSet<(int time, int totalFlow, Valve valve, Valve elephantValve, string opens, int noOpens, int noElephantOpens)>();
+        var visited = new HashSet<(int time, int totalFlow, Valve valve, string opens, int distance, List<(Valve, int)> path)>();
         var startValve = valves.Find(x => x.Name == "AA");
 
-        var queue = new Queue<(int time, int totalFlow, Valve valve, Valve elephantValve, string opens, int noOpens, int noElephantOpens)>();
+        var queue = new Queue<(int time, int totalFlow, Valve valve, string opens, int distance, List<(Valve, int)> path)>();
 
-        var start = (1, 0, startValve, startValve, new string('-', valves.Count), 0, 0);
+        var start = (1, 0, startValve, new string('-', valves.Count), 1, new List<(Valve, int)>());
 
         visited.Add(start);
         queue.Enqueue(start);
 
         var best = 0;
-
-        var allOpened = "";
-        foreach (var v in valves)
-        {
-            allOpened += v.FlowRate > 0 ? 'O' : '-';
-        }
+        var result = new List<List<(Valve, int)>>();
 
         while (queue.Count > 0)
         {
-            var (time, totalFlow, valve, elephantValve, opens, noOpens, noElephantOpens) = queue.Dequeue();
-
-            var openValves = valves.Where(x => opens[x.Id] == 'O').ToList();
-
-            if (opens == allOpened)
-            {
-                totalFlow += openValves.Sum(x => x.FlowRate) * (26 - time);
-                if (totalFlow > best) best = totalFlow;
-                continue;
-            }
-
-            totalFlow += openValves.Sum(x => x.FlowRate);
-
-            if (time == 26)
-            {
-                if (totalFlow > best) best = totalFlow;
-                continue;
-            }
-
-            // Human and elephant are in different unopened valves with flow => open both
-            if (valve != elephantValve && opens[valve.Id] == '-' && opens[elephantValve.Id] == '-' && valve.FlowRate > 0 && elephantValve.FlowRate > 0)
-            {
-                var newOpens = opens.ToCharArray();
-                newOpens[valve.Id] = 'O';
-                newOpens[elephantValve.Id] = 'O';
-
-                queue.Enqueue((time + 1, totalFlow, valve, elephantValve, new string(newOpens), 0, 0));
-            }
-
-            if (opens[valve.Id] == '-' && valve.FlowRate > 0)
-            {
-                var newOpens = opens.ToCharArray();
-                newOpens[valve.Id] = 'O';
-
-                foreach (var v in elephantValve.NextValves)
-                {
-                    var next = (time + 1, totalFlow, valve, v, new string(newOpens), 0, noElephantOpens + 1);
-
-                    if (!visited.Contains(next))
-                    {
-                        visited.Add(next);
-                        queue.Enqueue(next);
-                    }
-                }
-            }
-
-            if (opens[elephantValve.Id] == '-' && elephantValve.FlowRate > 0)
-            {
-                var newOpens = opens.ToCharArray();
-                newOpens[elephantValve.Id] = 'O';
-
-                foreach (var v in valve.NextValves)
-                {
-                    var next = (time + 1, totalFlow, v, elephantValve, new string(newOpens), noOpens + 1, 0);
-
-                    if (!visited.Contains(next))
-                    {
-                        visited.Add(next);
-                        queue.Enqueue(next);
-                    }
-                }
-            }
-
-            foreach (var hv in valve.NextValves)
-            foreach (var ev in elephantValve.NextValves)
-            {
-                if (hv != ev)
-                {
-                    var next = (time + 1, totalFlow, hv, ev, opens, noOpens + 1, noElephantOpens + 1);
-
-                    if (!visited.Contains(next))
-                    {
-                        visited.Add(next);
-                        queue.Enqueue(next);
-                    }
-                }
-            }
-        }
-
-        return best;
-    }
-
-    private int MaxFlow()
-    {
-        var visited = new HashSet<(int time, int totalFlow, Valve valve, string opens, int distance)>();
-        var startValve = valves.Find(x => x.Name == "AA");
-
-        var queue = new Queue<(int time, int totalFlow, Valve valve, string opens, int distance)>();
-
-        var start = (1, 0, startValve, new string('-', valves.Count), 1);
-
-        visited.Add(start);
-        queue.Enqueue(start);
-
-        var best = 0;
-
-        while (queue.Count > 0)
-        {
-            var (time, totalFlow, valve, opens, distance) = queue.Dequeue();
+            var (time, totalFlow, valve, opens, distance, path) = queue.Dequeue();
 
             var openValves = valves.Where(x => opens[x.Id] == 'O').ToList();
 
@@ -220,34 +101,39 @@ public class Day16
                 continue;
             }
 
-            if (time < 30)
-            {
-                var result = totalFlow + openValves.Sum(x => x.FlowRate) * (30 - time);
-                if (result > best) best = result;
-            }
-
             if (opens[valve.Id] == '-' && valve.FlowRate > 0)
             {
                 var newOpens = opens.ToCharArray();
                 newOpens[valve.Id] = 'O';
 
-                queue.Enqueue((time + 1, totalFlow, valve, new string(newOpens), 1));
+                queue.Enqueue((time + 1, totalFlow, valve, new string(newOpens), 1, path));
                 continue;
             }
-            
+
             foreach (var (v, d) in valve.NextFlowValves.Where(x => opens[x.Valve.Id] == '-'))
             {
-                var next = (time + d, totalFlow, v, opens, d);
+                var newPath = path.ToList();
+                newPath.Add((v, time + d));
 
-                if (!visited.Contains(next) && time + d <= 30)
+                var next = (time + d, totalFlow, v, opens, d, newPath);
+
+                if (!visited.Contains(next))
                 {
-                    visited.Add(next);
-                    queue.Enqueue(next);
+                    if (time + d <= 30)
+                    {
+                        if (newPath.Count > 7)
+                        {
+                            result.Add(newPath);
+                        }
+
+                        visited.Add(next);
+                        queue.Enqueue(next);
+                    }
                 }
             }
         }
 
-        return best;
+        return result;
     }
 
 
