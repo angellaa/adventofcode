@@ -43,12 +43,12 @@ public class Day16
 
     private int MaxFlow()
     {
-        var visited = new HashSet<(int time, int totalFlow, Valve valve, string opens)>();
+        var visited = new HashSet<(int time, int totalFlow, Valve valve, string opens, int noOpens)>();
         var startValve = valves.Find(x => x.Name == "AA");
 
-        var queue = new Queue<(int time, int totalFlow, Valve valve, string opens)>();
+        var queue = new Queue<(int time, int totalFlow, Valve valve, string opens, int noOpens)>();
 
-        var start = (1, 0, startValve, new string('-', valves.Count));
+        var start = (1, 0, startValve, new string('-', valves.Count), 0);
 
         visited.Add(start);
         queue.Enqueue(start);
@@ -57,9 +57,16 @@ public class Day16
 
         while (queue.Count > 0)
         {
-            var (time, totalFlow, valve, opens) = queue.Dequeue();
+            var (time, totalFlow, valve, opens, noOpens) = queue.Dequeue();
 
             var openValves = valves.Where(x => opens[x.Id] == 'O').ToList();
+
+            if (noOpens > 3)
+            {
+                totalFlow += openValves.Sum(x => x.FlowRate) * (30 - time);
+                if (totalFlow > best) best = totalFlow;
+                continue;
+            }
 
             totalFlow += openValves.Sum(x => x.FlowRate);
 
@@ -74,12 +81,12 @@ public class Day16
                 var newOpens = opens.ToCharArray();
                 newOpens[valve.Id] = 'O';
 
-                queue.Enqueue((time + 1, totalFlow, valve, new string(newOpens)));
+                queue.Enqueue((time + 1, totalFlow, valve, new string(newOpens), 0));
             }
 
             foreach (var v in valve.NextValves)
             {
-                var next = (time + 1, totalFlow, v, opens);
+                var next = (time + 1, totalFlow, v, opens, noOpens + 1);
 
                 if (!visited.Contains(next))
                 {
