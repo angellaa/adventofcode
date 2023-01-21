@@ -5,13 +5,15 @@ using static System.Text.RegularExpressions.Regex;
 public class Day16
 {
     private List<Valve> valves;
-    private Stack<Valve> openValves;
-    private HashSet<Valve> visited;
+
+    [Flags]
+    enum Opens {};
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
         valves = new List<Valve>();
+        var id = 0;
 
         foreach (var line in File.ReadAllLines("Input.txt"))
         {
@@ -21,7 +23,7 @@ public class Day16
             var flowRate = int.Parse(m.Groups[2].Value);
             var nextVales = m.Groups[3].Value.Split(", ").ToList();
 
-            valves.Add(new Valve(valve, flowRate, nextVales));
+            valves.Add(new Valve(id++, valve, flowRate, nextVales));
         }
 
         foreach (var valve in valves)
@@ -33,55 +35,64 @@ public class Day16
     [Test]
     public void Part1()
     {
-        openValves = new Stack<Valve>();
-        visited = new HashSet<Valve>();
-
-        var maxFlow = MaxFlow(1, 0, valves.Find(x => x.Name == "AA"), 0);
-
-        Assert.That(maxFlow, Is.EqualTo(1641));
+        Assert.That(MaxFlow(), Is.EqualTo(1641));
     }
 
     [Test]
     public void Part2() {}
 
-    private int MaxFlow(int time, int totalFlow, Valve startValve, int movesWithoutOpens)
+    private int MaxFlow()
     {
-        if (movesWithoutOpens > 3)
+        var visited = new HashSet<(int time, int totalFlow, Valve valve, string opens)>();
+        var startValve = valves.Find(x => x.Name == "AA");
+
+        var queue = new Queue<(int time, int totalFlow, Valve valve, string opens)>();
+
+        var start = (1, 0, startValve, new string('-', valves.Count));
+
+        visited.Add(start);
+        queue.Enqueue(start);
+
+        var best = 0;
+
+        while (queue.Count > 0)
         {
-            return totalFlow + openValves.Sum(x => x.FlowRate) * (30 - time);
+            var (time, totalFlow, valve, opens) = queue.Dequeue();
+
+            var openValves = valves.Where(x => opens[x.Id] == 'O').ToList();
+
+            totalFlow += openValves.Sum(x => x.FlowRate);
+
+            if (time == 30)
+            {
+                if (totalFlow > best) best = totalFlow;
+                continue;
+            }
+
+            if (opens[valve.Id] == '-' && valve.FlowRate > 0)
+            {
+                var newOpens = opens.ToCharArray();
+                newOpens[valve.Id] = 'O';
+
+                queue.Enqueue((time + 1, totalFlow, valve, new string(newOpens)));
+            }
+
+            foreach (var v in valve.NextValves)
+            {
+                var next = (time + 1, totalFlow, v, opens);
+
+                if (!visited.Contains(next))
+                {
+                    visited.Add(next);
+                    queue.Enqueue(next);
+                }
+            }
         }
 
-        totalFlow += openValves.Sum(x => x.FlowRate);
-
-        if (time == 30)
-        {
-            return totalFlow;
-        }
-
-        visited.Add(startValve);
-
-        var max = totalFlow;
-
-        if (!openValves.Contains(startValve) && startValve.FlowRate > 0)
-        {
-            openValves.Push(startValve);
-
-            max = MaxFlow(time + 1, totalFlow, startValve, 0);
-
-            openValves.Pop();
-        }
-
-        foreach (var valve in startValve.NextValves)
-        {
-            max = Math.Max(max, MaxFlow(time + 1, totalFlow, valve, movesWithoutOpens + 1));
-        }
-
-        visited.Remove(startValve);
-
-        return max;
+        return best;
     }
 
-    private record Valve(string Name, int FlowRate, List<string> NextValveNames)
+    private record Valve(int Id, string Name, int FlowRate, List<string> NextValveNames)
     {
         public List<Valve> NextValves;
     }
